@@ -1,0 +1,74 @@
+diff --git a/node_modules/react-native-paper/lib/commonjs/components/Menu/MenuItem.js b/node_modules/react-native-paper/lib/commonjs/components/Menu/MenuItem.js
+index d8695dd..5fb9211 100644
+--- a/node_modules/react-native-paper/lib/commonjs/components/Menu/MenuItem.js
++++ b/node_modules/react-native-paper/lib/commonjs/components/Menu/MenuItem.js
+@@ -86,6 +86,7 @@ const MenuItem = ({
+     disabled
+   };
+   return /*#__PURE__*/React.createElement(_TouchableRipple.default, {
++    borderless: true,
+     style: [styles.container, {
+       paddingHorizontal: containerPadding
+     }, dense && styles.md3DenseContainer, style],
+diff --git a/node_modules/react-native-paper/lib/module/components/Menu/MenuItem.js b/node_modules/react-native-paper/lib/module/components/Menu/MenuItem.js
+index 0158113..1810fdf 100644
+--- a/node_modules/react-native-paper/lib/module/components/Menu/MenuItem.js
++++ b/node_modules/react-native-paper/lib/module/components/Menu/MenuItem.js
+@@ -1,10 +1,10 @@
+ import * as React from 'react';
+ import { StyleSheet, View } from 'react-native';
+-import { getContentMaxWidth, getMenuItemColor, MAX_WIDTH, MIN_WIDTH } from './utils';
+ import { useInternalTheme } from '../../core/theming';
+ import Icon from '../Icon';
+ import TouchableRipple from '../TouchableRipple/TouchableRipple';
+ import Text from '../Typography/Text';
++import { getContentMaxWidth, getMenuItemColor, MAX_WIDTH, MIN_WIDTH } from './utils';
+ /**
+  * A component to show a single list item inside a Menu.
+  *
+@@ -78,6 +78,7 @@ const MenuItem = ({
+     disabled
+   };
+   return /*#__PURE__*/React.createElement(TouchableRipple, {
++    borderless: true,
+     style: [styles.container, {
+       paddingHorizontal: containerPadding
+     }, dense && styles.md3DenseContainer, style],
+diff --git a/node_modules/react-native-paper/src/components/Menu/MenuItem.tsx b/node_modules/react-native-paper/src/components/Menu/MenuItem.tsx
+index 4b8eb37..365d2e2 100644
+--- a/node_modules/react-native-paper/src/components/Menu/MenuItem.tsx
++++ b/node_modules/react-native-paper/src/components/Menu/MenuItem.tsx
+@@ -11,12 +11,6 @@ import {
+   ViewStyle,
+ } from 'react-native';
+ 
+-import {
+-  getContentMaxWidth,
+-  getMenuItemColor,
+-  MAX_WIDTH,
+-  MIN_WIDTH,
+-} from './utils';
+ import { useInternalTheme } from '../../core/theming';
+ import type { ThemeProp } from '../../types';
+ import Icon, { IconSource } from '../Icon';
+@@ -24,6 +18,12 @@ import TouchableRipple, {
+   Props as TouchableRippleProps,
+ } from '../TouchableRipple/TouchableRipple';
+ import Text from '../Typography/Text';
++import {
++  getContentMaxWidth,
++  getMenuItemColor,
++  MAX_WIDTH,
++  MIN_WIDTH,
++} from './utils';
+ 
+ export type Props = {
+   /**
+@@ -180,6 +180,7 @@ const MenuItem = ({
+ 
+   return (
+     <TouchableRipple
++      borderless
+       style={[
+         styles.container,
+         { paddingHorizontal: containerPadding },
