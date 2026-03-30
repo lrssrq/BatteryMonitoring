@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-BatteryMonitoring is a mobile application for battery monitoring based on Expo + React Native, targeting scenarios such as battery data collection, device management, alerting, and analysis.
+BatteryMonitoring is a mobile application for medical battery monitoring based on Expo + React Native, targeting scenarios such as battery data collection, device management, alerting, and analysis.
 
 The project uses Expo Router for page routing, integrates MQTT for real-time data reception, and reserves the capability to collaborate with backend APIs for data persistence and historical queries.
 
