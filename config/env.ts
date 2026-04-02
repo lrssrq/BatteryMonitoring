@@ -29,5 +29,4 @@ const envConfig: EnvConfig = {
   MQTT_PASSWORD: Constants.expoConfig?.extra?.mqtt_password || undefined,
 };
 
-console.log(envConfig);
 export default envConfig;

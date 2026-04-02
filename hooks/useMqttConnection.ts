@@ -87,7 +87,8 @@ function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
       isComponentMounted = false;
       if (client) {
         client.end(true, () => {
-          console.log("MQTT client disconnected");
+          setMqttStatus("Disconnected");
+          setMqttClient(null);
         });
       }
     };

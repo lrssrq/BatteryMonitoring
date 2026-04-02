@@ -1,10 +1,7 @@
 import toastConfig from "@/components/ToastConfig";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { StatusBar, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 // import { KeyboardProvider } from "react-native-keyboard-controller";
 import { AlertProvider } from "@/contexts/AlertContext";
@@ -30,28 +27,6 @@ SplashScreen.setOptions({
   fade: true,
 });
 export default function RootLayout() {
-  console.log(StatusBar.currentHeight);
-  const colorScheme = useColorScheme();
-
-  const [loaded, error] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-    ...FontAwesome.font,
-  });
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setStatusBarStyle("light");
-  //   }, 0);
-  // }, []);
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
-  if (!loaded) {
-    return null;
-  }
-
   return (
     <SafeAreaProvider>
       <SettingsProvider>

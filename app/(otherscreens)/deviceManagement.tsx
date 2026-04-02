@@ -60,9 +60,7 @@ export default function DeviceManagement() {
   // ref
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
-  }, []);
+  const handleSheetChanges = useCallback((index: number) => {}, []);
   const [deviceSN, setDeviceSN] = useState(ulid());
   const [isLoading, setIsLoading] = useState(false);
   const snapPoints = useMemo(() => ["25%"], []);
@@ -76,7 +74,6 @@ export default function DeviceManagement() {
       (async () => {
         const scannedData = consumeLatestScannedData();
         if (scannedData) {
-          console.log("Scanned Data:", scannedData);
           if (isValid(scannedData)) {
             const bindSuccess = await bindDevice(scannedData);
             if (bindSuccess) {
@@ -559,12 +556,8 @@ const styles = StyleSheet.create({
 const DeviceRow = ({
   item,
   onActiveStateChange,
-  onPress = () => {
-    console.log(`Device ${item.deviceSN} pressed`);
-  },
-  onLongPress = () => {
-    console.log(`Device ${item.deviceSN} long-pressed`);
-  },
+  onPress = () => {},
+  onLongPress = () => {},
   i18n,
   colors,
 }: {

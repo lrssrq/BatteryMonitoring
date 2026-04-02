@@ -310,11 +310,9 @@ export default function SettingsScreen() {
                 if (contentPresentedOnModal === "language") {
                   if (newValue === selectedLanguage) return;
                   setSelectedLanguage(newValue as LanguageCode);
-                  console.log("Selected language:", newValue);
                 } else {
                   if (newValue === selectedAlertMethod) return;
                   setSelectedAlertMethod(newValue as AlertMethod);
-                  console.log("Selected alert method:", newValue);
                 }
               }}
               value={

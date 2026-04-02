@@ -20,7 +20,6 @@ async function bindDevice(
     console.error("Failed to bind device:", error);
     return false;
   } else {
-    console.log("Device bound successfully:", data);
     return true;
   }
 }
@@ -61,7 +60,7 @@ async function getDevices() {
   });
 
   if (error) {
-    console.log("Failed to fetch devices:", error);
+    console.error("Failed to fetch devices:", error);
   } else {
     const mappedDevices = Array.isArray(data)
       ? data.filter(isDeviceApiItem).map<Device>((device) => ({
@@ -70,8 +69,6 @@ async function getDevices() {
           boundAt: new Date(device.createdAt),
         }))
       : [];
-    console.log("Fetched devices:", data);
-    // console.log("Mapped devices:", mappedDevices);
     return mappedDevices;
   }
   return [];
@@ -90,7 +87,6 @@ async function unbindDevice(deviceSN: string): Promise<boolean> {
     console.error("Failed to unbind device:", error);
     return false;
   } else {
-    console.log("Device unbound successfully:", data);
     return true;
   }
 }
@@ -112,7 +108,6 @@ async function renameDevice(
     console.error("Failed to rename device:", error);
     return false;
   } else {
-    console.log("Device renamed successfully:", data);
     return true;
   }
 }
@@ -120,7 +115,6 @@ async function renameDevice(
 async function saveDevicesToCache(devices: Device[]) {
   try {
     await AsyncStorage.setItem(DEVICE_CACHE_KEY, JSON.stringify(devices));
-    console.log("Devices cached:", devices);
   } catch (error) {
     console.error("Failed to cache devices:", error);
   }
@@ -137,7 +131,6 @@ async function loadCachedDevices(): Promise<Device[]> {
           boundAt: new Date(device.boundAt),
         }),
       ) as Device[];
-      // console.log("Loaded cached devices:", devices);
       return devices;
     }
   } catch (error) {
@@ -149,7 +142,6 @@ async function loadCachedDevices(): Promise<Device[]> {
 async function clearCachedDevices() {
   try {
     await AsyncStorage.removeItem(DEVICE_CACHE_KEY);
-    console.log("Cleared cached devices");
   } catch (error) {
     console.error("Failed to clear cached devices:", error);
   }
@@ -158,7 +150,6 @@ async function clearCachedDevices() {
 async function cacheDevices(devices: Device[]) {
   try {
     await AsyncStorage.setItem(DEVICE_CACHE_KEY, JSON.stringify(devices));
-    console.log("Devices cached:", devices);
   } catch (error) {
     console.error("Failed to cache devices:", error);
   }

@@ -101,7 +101,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         if (saved) {
           try {
             loadedSettings = JSON.parse(saved);
-            console.log("Settings loaded:", loadedSettings);
           } catch (e) {
             console.error("Settings JSON parse error:", e);
           }
@@ -154,7 +153,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           SETTINGS_STORAGE_KEY,
           JSON.stringify(settingsToSave),
         );
-        console.log("Settings saved:", settingsToSave);
       } catch (error) {
         console.error("Failed to save settings:", error);
       }

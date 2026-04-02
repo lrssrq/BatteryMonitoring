@@ -53,11 +53,6 @@ export default function DataHistory() {
           battery: record.batteryLevel,
         }));
         setCurrentData(currentData);
-        // console.log(
-        //   "Loaded battery data for device",
-        //   selectedDevice.deviceSN,
-        //   currentData,
-        // );
       });
     }
   }, []);
@@ -77,21 +72,20 @@ export default function DataHistory() {
       case "excel": {
         const worksheet = XLSX.utils.json_to_sheet(currentData);
         const workbook = XLSX.utils.book_new();
-        // console.log(worksheet);
         XLSX.utils.book_append_sheet(workbook, worksheet, "dataHistory");
         const buffer = XLSX.writeXLSX(workbook, {
           type: "buffer",
           bookType: "xlsx",
         });
 
-        console.log({
-          type: buffer.constructor.name,
-          size: buffer.byteLength + " bytes",
-          firstBytes: Array.from(buffer.slice(0, 8))
-            .map((b) => "0x" + Number(b).toString(16).padStart(2, "0"))
-            .join(", "),
-          isValidXLSX: buffer[0] === 0x50 && buffer[1] === 0x4b,
-        });
+        // console.log({
+        //   type: buffer.constructor.name,
+        //   size: buffer.byteLength + " bytes",
+        //   firstBytes: Array.from(buffer.slice(0, 8))
+        //     .map((b) => "0x" + Number(b).toString(16).padStart(2, "0"))
+        //     .join(", "),
+        //   isValidXLSX: buffer[0] === 0x50 && buffer[1] === 0x4b,
+        // });
         return buffer;
       }
       case "json":
@@ -159,7 +153,6 @@ export default function DataHistory() {
           html: String(content),
           base64: false,
         });
-        console.log(pdf);
         const pdfFile = new File(pdf.uri);
         const oldFile = new File(pdfFile.parentDirectory, "data_history.pdf");
         if (oldFile.exists) {
@@ -241,7 +234,7 @@ export default function DataHistory() {
     }
 
     const content = generateExportContent(fileType);
-    console.log(`Exporting data as ${fileType}...`);
+    // console.log(`Exporting data as ${fileType}...`);
     await handler.handler(fileType, content);
   };
 

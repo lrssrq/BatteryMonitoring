@@ -22,7 +22,7 @@ import {
 import { Icon, IconButton, MD3Colors } from "react-native-paper";
 import Toast from "react-native-toast-message";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("screen");
-console.log("Screen Dimensions:", SCREEN_WIDTH, SCREEN_HEIGHT);
+
 const SCAN_AREA_SIZE = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.6; // scanned area is 60% of the smaller screen dimension
 
 function handleScanResult(data: string) {
@@ -77,8 +77,6 @@ async function openImagePickerAsync() {
     aspect: [4, 3],
     quality: 1,
   });
-
-  console.log(result);
 
   if (!result.canceled) {
     scanFromURL(result.assets[0].uri);

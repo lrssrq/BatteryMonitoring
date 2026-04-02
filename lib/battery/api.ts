@@ -34,7 +34,6 @@ export async function saveBatteryData(
     let parsedData: BatteryDataRecord[] = [];
     if (batteryData) {
       parsedData = JSON.parse(batteryData);
-      // console.log("Existing battery data loaded:", parsedData);
       if (parsedData.length < 200) {
         parsedData.push({
           batteryLevel: payload.batteryLevel,
@@ -48,11 +47,16 @@ export async function saveBatteryData(
         });
       }
     }
+    else {
+      parsedData.push({
+        batteryLevel: payload.batteryLevel,
+        recordedAt: new Date().toISOString(),
+      });
+    }
     await AsyncStorage.setItem(
       DEVICE_DATA_KEY_PREFIX + payload.deviceSN,
       JSON.stringify(parsedData),
     );
-    // console.log("Battery data saved:", parsedData);
 
     return true;
   } catch (error) {

@@ -1,6 +1,5 @@
 import { ALERT_MESSAGE_CACHE_KEY } from "@/constants/AsyncStorageKeys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Notifications from "expo-notifications";
 import React, {
   createContext,
   ReactNode,
@@ -22,10 +21,6 @@ export type Message = {
   device?: string;
 };
 
-/**
- * Generate alert message templates with current language.
- * This function is called dynamically to ensure messages are always in the current language.
- */
 const getMessageTemplate = (i18n: any) => ({
   TooHigh: {
     when: new Date(0),
@@ -52,6 +47,44 @@ interface AlertContextType {
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
 
+const sendBrowserNotification = async (
+  title: string,
+  options?: NotificationOptions,
+) => {
+  if (!("Notification" in window)) {
+    console.warn("Notification API not supported in this browser");
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    try {
+      new Notification(title, options);
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  } else if (Notification.permission !== "denied") {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        new Notification(title, options);
+      }
+    } catch (error) {
+      console.error("Failed to request notification permission:", error);
+    }
+  }
+};
+
+const restoreMessage = (i18n: any, type: "high" | "low" | "info") => {
+  switch (type) {
+    case "high":
+      return i18n.t("alertcontext_message_too_high");
+    case "low":
+      return i18n.t("alertcontext_message_too_low");
+    default:
+      return "";
+  }
+};
+
 export const AlertProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { i18n } = useTranslation();
@@ -77,30 +110,19 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
   const { remainingPower } = useBatteryDataPipeline();
   const { alertThreshold, notificationEnabled } = useSettings();
   const { selectedDevice } = useDevice();
+
   useEffect(() => {
-    const setupNotifications = async () => {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== "granted") {
-        console.warn("Failed to get push token for push notification!");
-        return;
-      }
-      Notifications.setNotificationHandler({
-        handleNotification: async () => ({
-          shouldPlaySound: true,
-          shouldSetBadge: false,
-          shouldShowBanner: true,
-          shouldShowList: true,
-        }),
-      });
-    };
-    setupNotifications();
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission()
+        .then((permission) => {
+          console.log("Notification permission:", permission);
+        })
+        .catch((error) => {
+          console.error("Failed to request notification permission:", error);
+        });
+    }
   }, []);
+
   useEffect(() => {
     const loadMessages = async () => {
       try {
@@ -111,7 +133,6 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
         if (storedMessages) {
           let parsed = JSON.parse(storedMessages);
 
-          // Fix for previously corrupted data (array of arrays)
           if (Array.isArray(parsed) && Array.isArray(parsed[0])) {
             parsed = parsed[0];
           }
@@ -127,19 +148,17 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
           const unread = loadedMessages.filter((m: Message) => m.unread).length;
           setUnreadCount(unread);
         }
-        // Indicate loading is done AFTER states are set
         setIsMessagesLoaded(true);
       } catch (e) {
         console.error("Failed to load messages:", e);
-        setIsMessagesLoaded(true); // Ensure it initializes even on error
+        setIsMessagesLoaded(true);
       }
     };
     loadMessages();
   }, []);
 
-  // Sync session fail: if user logs out, clear data
   useEffect(() => {
-    if (isPending || isRefetching) return; // Wait until session status is stable
+    if (isPending || isRefetching) return;
     if (isMessagesLoaded && !session?.user) {
       setMessages([]);
       setUnreadCount(0);
@@ -156,6 +175,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
           const { message, ...itemWithoutMessage } = item;
           return itemWithoutMessage;
         }) || [];
+
       if (updatedMessages.length > 100) {
         updatedMessages = updatedMessages.slice(-100);
       }
@@ -168,7 +188,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!isMessagesLoaded || !session?.user) return;
-    if (remainingPower === null || remainingPower < 0) return; // Wait until initial data is loaded
+    if (remainingPower === null || remainingPower < 0) return;
 
     const TEMPLATE = getMessageTemplate(i18n);
 
@@ -185,12 +205,10 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
         now.getTime() - new Date(lastAlertTime).getTime() > 5 * 60 * 1000
       ) {
         if (notificationEnabled) {
-          Notifications.scheduleNotificationAsync({
-            content: {
-              title: i18n.t("alertcontext_notification_title"),
-              body: TEMPLATE.TooHigh.message,
-            },
-            trigger: null,
+          sendBrowserNotification(i18n.t("alertcontext_notification_title"), {
+            body: TEMPLATE.TooHigh.message,
+            icon: require("@/assets/images/icon.png"),
+            tag: "battery-alert",
           });
         }
         setMessages((prev) => {
@@ -219,12 +237,10 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
         now.getTime() - new Date(lastAlertTime).getTime() > 5 * 60 * 1000
       ) {
         if (notificationEnabled) {
-          Notifications.scheduleNotificationAsync({
-            content: {
-              title: i18n.t("alertcontext_notification_title"),
-              body: TEMPLATE.TooLow.message,
-            },
-            trigger: null, // immediate notification
+          sendBrowserNotification(i18n.t("alertcontext_notification_title"), {
+            body: TEMPLATE.TooLow.message,
+            icon: require("@/assets/images/icon.png"),
+            tag: "battery-alert",
           });
         }
         setMessages((prev) => {
@@ -294,18 +310,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
 export const useAlert = () => {
   const context = useContext(AlertContext);
   if (context === undefined) {
-    throw new Error("useAlert must be used within an AlertProvider");
+    throw new Error("useAlert must be used within AlertProvider");
   }
   return context;
-};
-
-const restoreMessage = (i18n: any, type: string) => {
-  switch (type) {
-    case "low":
-      return i18n.t("alertcontext_message_too_low");
-    case "high":
-      return i18n.t("alertcontext_message_too_high");
-    default:
-      return "Unknown alert type";
-  }
 };

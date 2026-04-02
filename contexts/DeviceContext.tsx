@@ -41,7 +41,6 @@ export const DeviceProvider = ({ children }: { children: ReactNode }) => {
       }
       let devices = await loadCachedDevices();
       if (devices.length === 0 || refresh) {
-        console.log("get devices from server");
         devices = await getDevices();
         if (devices.length > 0) {
           await saveDevicesToCache(devices);
@@ -49,7 +48,6 @@ export const DeviceProvider = ({ children }: { children: ReactNode }) => {
       }
       setDevices(devices);
       setSelectedDevice(devices.length > 0 ? devices[0] : null);
-      // console.log("devices loaded:", devices);
     },
     [session],
   );

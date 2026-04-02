@@ -95,7 +95,7 @@ const config: ExpoConfig = {
         enableBase64ShareAndroid: true,
       },
     ],
-    "expo-asset",
+    ["expo-asset", {}],
     "expo-secure-store",
     "expo-sharing",
     "expo-localization",

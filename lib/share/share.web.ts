@@ -6,11 +6,11 @@ export const shareMessage = async (message: string): Promise<ShareResult> => {
       await navigator.share({ text: message });
       return { success: true };
     } catch (error) {
-      console.log("Share cancelled or error:", error);
+      console.error("Share cancelled or error:", error);
       return { success: false, error };
     }
   } else {
-    console.log("Web share not supported");
+    console.error("Web share not supported");
     return { success: false, error: "Not supported" };
   }
 };

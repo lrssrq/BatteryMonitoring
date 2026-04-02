@@ -1,4 +1,5 @@
 import React, { useImperativeHandle, useState } from "react";
+import { StyleProp, ViewStyle } from "react-native";
 import { Button, Dialog, Portal, Text, TextInput } from "react-native-paper";
 
 export interface PaperDialogRef {
@@ -22,6 +23,7 @@ interface PaperDialogProps {
   inputValue?: string;
   maxLength?: number;
   dismissable?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function PaperDialog({
@@ -39,6 +41,7 @@ export default function PaperDialog({
   inputValue = "",
   maxLength = 100,
   dismissable = false,
+  style,
 }: PaperDialogProps) {
   const [visible, setVisible] = useState(false);
   const [text, setText] = useState(inputValue);
@@ -66,6 +69,7 @@ export default function PaperDialog({
     <Portal>
       <Dialog
         visible={visible}
+        style={style}
         // onDismiss={dismissable ? handleCancel : undefined}
         dismissable={dismissable}
       >
@@ -85,9 +89,13 @@ export default function PaperDialog({
         </Dialog.Content>
         <Dialog.Actions>
           {mode === "double" && onCancel && (
-            <Button onPress={handleCancel}>{cancelText}</Button>
+            <Button onPress={handleCancel} style={{ minWidth: "10%" }}>
+              {cancelText}
+            </Button>
           )}
-          <Button onPress={handleConfirm}>{confirmText}</Button>
+          <Button onPress={handleConfirm} style={{ minWidth: "10%" }}>
+            {confirmText}
+          </Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

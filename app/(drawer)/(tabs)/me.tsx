@@ -45,7 +45,6 @@ export default function Tab() {
 
   // session change effect: update cache and display user info accordingly
   useEffect(() => {
-    console.log("Session changed:", session, "Pending:", isPending);
     if (isPending) return;
     if (session?.user) {
       const userData = {

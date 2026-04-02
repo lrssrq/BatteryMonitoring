@@ -1,8 +1,9 @@
 import { useTheme } from "@/hooks/useTheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Tabs, useNavigation } from "expo-router";
+import { Tabs } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -14,7 +15,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const { theme, colors } = useTheme();
-  const navigation = useNavigation();
+  const { i18n } = useTranslation();
   return (
     <Tabs
       screenOptions={{
@@ -36,7 +37,7 @@ export default function TabLayout() {
             backgroundColor: colors.background,
           },
           headerShown: false,
-          title: "My Device",
+          title: i18n.t("home_header_title"),
           headerTitleAlign: "center",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
@@ -54,7 +55,7 @@ export default function TabLayout() {
             backgroundColor: colors.background,
           },
           headerShown: false,
-          title: "Analysis",
+          title: i18n.t("analysis_header_title"),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "analytics-sharp" : "analytics-outline"}
@@ -71,7 +72,7 @@ export default function TabLayout() {
           headerStyle: {
             backgroundColor: colors.background,
           },
-          title: "Alert",
+          title: i18n.t("alert_header_title"),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "alert-circle" : "alert-circle-outline"}
@@ -88,7 +89,7 @@ export default function TabLayout() {
             backgroundColor: colors.background,
           },
           headerShown: false,
-          title: "Me",
+          title: i18n.t("me_header_title"),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "person-circle-sharp" : "person-circle-outline"}

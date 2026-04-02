@@ -7,10 +7,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { ScalarType } from "react-native-executorch";
 import { useDevice } from "./DeviceContext";
 import { useModel } from "./ModelContext";
 import { useMqtt } from "./MqttContext";
+
 const TOPIC_PREFIX = "device/data/";
 
 type BatteryDataPipelineContextType = {
@@ -42,66 +42,73 @@ export const BatteryDataPipelineProvider = ({
   }, [model]);
 
   const modelInference = async (inputData: Float32Array) => {
-    // Early exit if model not ready
     if (!modelRef.current || !modelRef.current.isReady) {
-      console.warn("⚠ Model not ready/available, skipping inference");
+      console.warn("Model not ready/available, skipping inference");
+      setRemainingPower(-1);
+      return;
+    }
+
+    if (inputData.length !== 40) {
+      console.warn("Invalid input length for model, expected 40 values", {
+        actualLength: inputData.length,
+      });
+      setRemainingPower(-1);
+      return;
+    }
+
+    if (!modelRef.current.ort?.Tensor) {
+      console.warn("ONNX Runtime is unavailable, skipping inference");
       setRemainingPower(-1);
       return;
     }
 
     try {
-      // Create input tensor with safe scalar type
-      const inputTensor = {
-        dataPtr: inputData,
-        sizes: [1, 20, 2],
-        scalarType: ScalarType.FLOAT,
-      };
+      const inputTensor = new modelRef.current.ort.Tensor(
+        "float32",
+        inputData,
+        [1, 20, 2],
+      );
+      const outputs = await modelRef.current.forward({
+        [modelRef.current.session.inputNames[0]]: inputTensor,
+      });
 
-      // Execute model inference
-      const output = await modelRef.current.forward([inputTensor]);
+      const outputTensor =
+        outputs.output ?? outputs[Object.keys(outputs)[0] as string];
 
-      if (!output || !output[0]) {
-        console.error("Invalid model output");
+      if (!outputTensor || !outputTensor.data) {
+        console.error("Invalid ONNX output", outputs);
         setRemainingPower(-1);
         return;
       }
-
-      const dataBuffer = output[0].dataPtr as ArrayBuffer;
-      const predictedValue = new Float32Array(dataBuffer)[0];
-
+      const predictedValue = (outputTensor.data as Float32Array)[0];
       console.log(
         "✓ Inference ok:",
-        new Float32Array(dataBuffer),
+        new Float32Array(outputTensor.data).toString(),
         "sizes:",
-        output[0].sizes,
+        outputTensor.dims,
+      );
+      const batteryLevel = Math.round(
+        predictedValue > 0 ? Math.min(100, predictedValue * 100) : 0,
       );
 
-      // Update UI with predicted value
-      if (predictedValue > 0) {
-        setRemainingPower(Math.min(100, Math.round(predictedValue * 100)));
-      } else {
-        setRemainingPower(0);
-      }
-
+      setRemainingPower(batteryLevel);
       setLastSyncTime(
         new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
       );
 
-      // Save to database
       await saveBatteryData({
         deviceSN: selectedDevice?.deviceSN || "",
-        batteryLevel: Math.round(
-          predictedValue > 0 ? Math.min(100, predictedValue * 100) : 0,
-        ),
+        batteryLevel,
       });
     } catch (error) {
-      console.error("✗ Model inference failed:", (error as Error).message);
+      console.error("Model inference failed:", (error as Error).message);
       setRemainingPower(-1);
     }
   };
 
   useEffect(() => {
     if (!selectedDevice) return;
+
     const currentTopic = TOPIC_PREFIX + selectedDevice.deviceSN;
     if (mqttData?.topic === currentTopic) {
       try {
@@ -110,6 +117,7 @@ export const BatteryDataPipelineProvider = ({
           console.warn("Invalid MQTT payload format", parsedMessage);
           return;
         }
+
         const inputData = new Float32Array(parsedMessage.data);
         modelInference(inputData);
       } catch (error) {
@@ -122,12 +130,12 @@ export const BatteryDataPipelineProvider = ({
     const nextTopic = selectedDevice
       ? TOPIC_PREFIX + selectedDevice.deviceSN
       : null;
-    console.log("nextTopic:", nextTopic, "mqttStatus:", mqttStatus);
 
     if (!selectedDevice && prevTopicRef.current) {
       unsubscribeFromTopic([prevTopicRef.current]);
       setRemainingPower(-1);
     }
+
     if (mqttStatus !== "Connected") {
       setRemainingPower(-1);
       setLastSyncTime("");

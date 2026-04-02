@@ -35,10 +35,7 @@ export default function Alert() {
     handleMarkALLAsRead,
     handleClearData,
   } = useAlert();
-  // console.log(messages);
-  // useEffect(() => {
-  //   handleClearData();
-  // }, []);
+
   const handleRowOpen = (ref: SwipeableMethods) => {
     if (openSwipeableRef.current && openSwipeableRef.current !== ref) {
       openSwipeableRef.current.close();
@@ -309,7 +306,6 @@ const SwipeableRow = ({
   const markAsRead = () => {
     onMarkAsRead();
     swipeableRef.current?.reset();
-    console.log("Marked as read:", item.message);
   };
   const backgroundColorStyle = {
     backgroundColor: item.unread ? colors.alertBackground : "transparent",

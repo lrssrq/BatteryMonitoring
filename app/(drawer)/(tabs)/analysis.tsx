@@ -27,7 +27,6 @@ export default function Tab() {
           dataPointText: String(record.batteryLevel),
           time: new Date(record.recordedAt),
         }));
-        // console.log(lineDataItems);
         setCurrentData(lineDataItems);
         setPending(false);
       });
