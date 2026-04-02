@@ -16,7 +16,7 @@ import {
   Text
 } from "@radix-ui/themes";
 import { router } from "expo-router";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import Toast from "react-native-toast-message";
@@ -31,13 +31,25 @@ export default function IndexWeb() {
   const splitCardsDesktop = width >= 1380;
   const [isDeviceDialogVisible, setIsDeviceDialogVisible] = useState(false);
   const deviceTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    setIsTouch(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   const enterDevice = useCallback(() => {
+    if (isTouch) return;
     clearTimeout(deviceTimer.current);
     setIsDeviceDialogVisible(true);
-  }, []);
+  }, [isTouch]);
   const leaveDevice = useCallback(() => {
+    if (isTouch) return;
     deviceTimer.current = setTimeout(() => setIsDeviceDialogVisible(false), 200);
-  }, []);
+  }, [isTouch]);
 
   const handleQuickAccess = (
     path: "/analysis" | "/dataHistory" | "/deviceManagement",

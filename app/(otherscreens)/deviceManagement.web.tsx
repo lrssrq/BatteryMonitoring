@@ -39,13 +39,25 @@ export default function DeviceManagementWeb() {
   const [unbindTarget, setUnbindTarget] = useState<Device | null>(null);
   const [openMenuSn, setOpenMenuSn] = useState<string | null>(null);
   const menuTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    setIsTouch(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   const enterMenu = useCallback((sn: string) => {
+    if (isTouch) return;
     clearTimeout(menuTimer.current);
     setOpenMenuSn(sn);
-  }, []);
+  }, [isTouch]);
   const leaveMenu = useCallback(() => {
+    if (isTouch) return;
     menuTimer.current = setTimeout(() => setOpenMenuSn(null), 200);
-  }, []);
+  }, [isTouch]);
 
   useEffect(() => {
     if (isSessionPending) return;

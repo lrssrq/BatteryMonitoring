@@ -64,13 +64,25 @@ export default function DataHistoryWeb() {
   const [rows, setRows] = useState<DataHistoryRecord[]>([]);
   const [exportOpen, setExportOpen] = useState(false);
   const exportTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    setIsTouch(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   const enterExport = useCallback(() => {
+    if (isTouch) return;
     clearTimeout(exportTimer.current);
     setExportOpen(true);
-  }, []);
+  }, [isTouch]);
   const leaveExport = useCallback(() => {
+    if (isTouch) return;
     exportTimer.current = setTimeout(() => setExportOpen(false), 200);
-  }, []);
+  }, [isTouch]);
 
   const timeZoneString = useMemo(() => {
     const offset = new Date().getTimezoneOffset();

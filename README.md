@@ -35,6 +35,9 @@ The `app/` directory uses Expo Router file-based routing:
 - `app/(drawer)/(tabs)/analysis.tsx`: Analysis
 - `app/(drawer)/(tabs)/alert.tsx`: Alerts
 - `app/(drawer)/(tabs)/me.tsx`: Profile
+- `app/(drawer)/about.tsx`: About
+- `app/(drawer)/help.tsx`: Help
+- `app/(drawer)/settings.tsx`: Settings
 - `app/(otherscreens)/deviceManagement.tsx`: Device Management
 - `app/(otherscreens)/dataHistory.tsx`: Data History
 - `app/(otherscreens)/camera.tsx`: Camera
@@ -48,12 +51,12 @@ BatteryMonitoring/
   app/                  # Routes and pages
   assets/               # Images, fonts, and models
   components/           # Shared components
+  config/               # Runtime environment config wrapper
   constants/            # Constants (languages, API paths, etc.)
   contexts/             # Global contexts (auth, MQTT, device, settings, etc.)
   hooks/                # Custom hooks (e.g., MQTT connection)
   lib/                  # Business logic (auth/device/battery/background, etc.)
   services/             # Service layer (e.g., mqttService)
-  docs/                 # Architecture, testing guides, etc.
   patches/              # patch-package patches
 ```
 
@@ -73,9 +76,15 @@ npm run postinstall
 
 to apply the `patch-package` patches.
 
-### 2) Key Configurations
+### 2) Create Local Environment File
 
-- Environment variables: `env.ts`
+Copy `.env.example` to `.env` and fill in the required values.
+
+### 3) Key Configurations
+
+- Environment variables: `.env` (example: `.env.example`)
+- Expo app config injection: `app.config.ts`
+- Runtime environment access: `config/env.ts`
 - Device-related API Paths: `constants/DeviceAPIPath.ts`
 
 ## Run Locally
@@ -92,6 +101,16 @@ npm run ios
 npm run web
 ```
 
+## Web Support
+
+Web export is supported through Expo:
+
+```bash
+npx expo export --clear --platform web
+```
+
+Output files are generated in the `dist/` directory.
+
 ## Backend Collaboration Notes
 
 The frontend communicates with the backend via REST API, and receives real-time data via MQTT. Existing documents provide several improvement directions, including:
@@ -105,7 +124,7 @@ The frontend communicates with the backend via REST API, and receives real-time 
 
 ### 1) Cannot connect to backend after startup
 
-- Check `API_BASE_URL` in `constants/env.ts`
+- Check `API_BASE_URL` in `.env` and `app.config.ts`
 - Confirm that the mobile device and backend are on the same network
 - Confirm that the backend service port is accessible
 

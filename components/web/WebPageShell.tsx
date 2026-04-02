@@ -138,45 +138,47 @@ export default function WebPageShell({
               justify="between"
               style={{ height: desktop ? 56 : 48 }}
             >
-              {/* Logo */}
-              <Flex
-                align="center"
-                gap="3"
-                onClick={() => router.navigate("/" as never)}
-                style={{ cursor: "pointer" }}
-              >
-                <Box
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "var(--radius-2)",
-                    background:
-                      "linear-gradient(135deg, var(--indigo-9), var(--cyan-9))",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
+              {/* Logo + Language */}
+              <Flex align="center" gap="3">
+                <Flex
+                  align="center"
+                  gap="3"
+                  onClick={() => router.navigate("/" as never)}
+                  style={{ cursor: "pointer" }}
                 >
-                  <Text
-                    size="2"
-                    weight="bold"
-                    style={{ color: "white", lineHeight: 1 }}
+                  <Box
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "var(--radius-2)",
+                      background:
+                        "linear-gradient(135deg, var(--indigo-9), var(--cyan-9))",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
                   >
-                    B
-                  </Text>
-                </Box>
-                <Heading
-                  size="3"
-                  weight="bold"
-                  style={{
-                    letterSpacing: "-0.03em",
-                    color: "var(--gray-12)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Battery Monitoring
-                </Heading>
+                    <Text
+                      size="2"
+                      weight="bold"
+                      style={{ color: "white", lineHeight: 1 }}
+                    >
+                      B
+                    </Text>
+                  </Box>
+                  <Heading
+                    size="3"
+                    weight="bold"
+                    style={{
+                      letterSpacing: "-0.03em",
+                      color: "var(--gray-12)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Battery Monitoring
+                  </Heading>
+                </Flex>
 
                 {/* Language selector */}
                 <DropdownMenu.Root open={langOpen} onOpenChange={setLangOpen} modal={false}>
