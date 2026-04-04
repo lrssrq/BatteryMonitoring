@@ -1,10 +1,8 @@
 import envConfig from "@/config/env";
 import { createMqttClient } from "@/services/mqttService";
-import * as SecureStore from "expo-secure-store";
 import type { MqttClient } from "mqtt";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 
 export type MqttStatus =
   | "Connected"
@@ -27,18 +25,21 @@ type UseMqttConnectionResult = {
 
 const MQTT_CLIENT_STORAGE_KEY = "mqtt_client_id";
 
-async function getPersistentClientId(): Promise<string> {
+function getPersistentClientId(): string {
   try {
-    let id = await SecureStore.getItemAsync(MQTT_CLIENT_STORAGE_KEY);
+    let id = localStorage.getItem(MQTT_CLIENT_STORAGE_KEY);
     if (!id) {
-      id = "native-" + uuidv4();
-      await SecureStore.setItemAsync(MQTT_CLIENT_STORAGE_KEY, id);
+      id = "web-" + crypto.randomUUID();
+      localStorage.setItem(MQTT_CLIENT_STORAGE_KEY, id);
     }
     return id;
   } catch {
-    return "native-" + uuidv4();
+    return "web-" + crypto.randomUUID();
   }
 }
+
+// Resolved once per page load; survives re-renders and StrictMode double-invocations.
+const MQTT_CLIENT_ID = getPersistentClientId();
 
 function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
   const [mqttStatus, setMqttStatus] = useState<MqttStatus>("Disconnected");
@@ -52,7 +53,10 @@ function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
     let isComponentMounted = true;
     let client: MqttClient | null = null;
 
-    getPersistentClientId().then((uniqueId) => {
+    connectMqtt();
+    return cleanup;
+
+    function connectMqtt() {
       if (!isComponentMounted) return;
 
       if (
@@ -60,11 +64,13 @@ function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
         envConfig.MQTT_PORT <= 0 ||
         envConfig.MQTT_PORT > 65535
       ) {
-        setMqttStatus("Error");
-        setMqttError({
-          type: "mqtt_config_error",
-          msg: "Invalid MQTT_HOST or MQTT_PORT configuration",
-        });
+        if (isComponentMounted) {
+          setMqttStatus("Error");
+          setMqttError({
+            type: "mqtt_config_error",
+            msg: "Invalid MQTT_HOST or MQTT_PORT configuration",
+          });
+        }
         return;
       }
 
@@ -81,11 +87,9 @@ function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
           setMqttError: (error: MqttError | null) => {
             if (isComponentMounted) setMqttError(error);
           },
-          uniqueId,
+          uniqueId: MQTT_CLIENT_ID,
           onMessage: (topic: string, message: Buffer<ArrayBufferLike>) => {
-            if (isComponentMounted) {
-              setMqttData({ message, topic });
-            }
+            if (isComponentMounted) setMqttData({ message, topic });
           },
         });
         if (isComponentMounted) setMqttClient(client);
@@ -99,9 +103,9 @@ function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
         }
         console.error("MQTT init failed", error);
       }
-    });
+    }
 
-    return () => {
+    function cleanup() {
       isComponentMounted = false;
       if (client) {
         client.end(true, () => {
@@ -109,7 +113,7 @@ function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
           setMqttClient(null);
         });
       }
-    };
+    }
   }, [doMqttConnection]);
 
   return {

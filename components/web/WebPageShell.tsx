@@ -13,7 +13,6 @@ import {
   Text,
   Theme,
 } from "@radix-ui/themes";
-import "@radix-ui/themes/styles.css";
 import { router, usePathname } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
