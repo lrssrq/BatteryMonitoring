@@ -1,218 +1,284 @@
-import Colors from "@/constants/Colors";
 import { useDevice } from "@/contexts/DeviceContext";
-import { useTheme } from "@/hooks/useTheme";
-import { loadBatteryData } from "@/lib/battery/api";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { BatteryDataRecord, loadBatteryData } from "@/lib/battery/api";
+import { Circle, useFont } from "@shopify/react-native-skia";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
-import { LineChart, lineDataItem } from "react-native-gifted-charts";
-import { Button, IconButton, SegmentedButtons } from "react-native-paper";
+import { Dimensions, StyleSheet, View } from "react-native";
+import { Button, IconButton, SegmentedButtons, Text, useTheme } from "react-native-paper";
+import Animated, {
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-type ChartPoint = lineDataItem & { time: Date };
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("screen");
+import { Area, CartesianChart, Line, useChartPressState } from "victory-native";
+
+type ChartPoint = { timestamp: number; value: number };
+
+const { width: SCREEN_WIDTH } = Dimensions.get("screen");
+const CHART_HEIGHT = 260;
+const TOOLTIP_WIDTH = 130;
+
+function getTimeRangeCutoff(range: string): number {
+  const rangeMs: Record<string, number> = {
+    "1hour": 60 * 60 * 1000,
+    "24hours": 24 * 60 * 60 * 1000,
+    "1week": 7 * 24 * 60 * 60 * 1000,
+    "1month": 30 * 24 * 60 * 60 * 1000,
+  };
+  return Date.now() - (rangeMs[range] ?? rangeMs["1hour"]);
+}
+
 export default function Tab() {
   const { i18n } = useTranslation();
   const { colors } = useTheme();
   const { selectedDevice } = useDevice();
   const [pending, setPending] = useState(false);
+  const [rawData, setRawData] = useState<BatteryDataRecord[]>([]);
+  const [timeRange, setTimeRange] = useState("1hour");
+  const font = useFont(
+    require("@/assets/fonts/SpaceMono-Regular.ttf"),
+    11,
+  );
+  const chartData = useMemo<ChartPoint[]>(() => {
+    const cutoff = getTimeRangeCutoff(timeRange);
+    return rawData
+      .filter((d) => new Date(d.recordedAt).getTime() >= cutoff)
+      .map((d) => ({
+        timestamp: new Date(d.recordedAt).getTime(),
+        value: d.batteryLevel,
+      }));
+  }, [rawData, timeRange]);
+
   const refreshData = async () => {
-    if (selectedDevice && selectedDevice.deviceSN) {
+    if (selectedDevice?.deviceSN) {
       setPending(true);
-      loadBatteryData(selectedDevice.deviceSN).then((data) => {
-        if (!data) return;
-        const lineDataItems: ChartPoint[] = data.map((record) => ({
-          value: record.batteryLevel,
-          // label: new Date(record.recordedAt).toLocaleTimeString(),
-          dataPointText: String(record.batteryLevel),
-          time: new Date(record.recordedAt),
-        }));
-        setCurrentData(lineDataItems);
-        setPending(false);
-      });
+      const data = await loadBatteryData(selectedDevice.deviceSN);
+      setRawData(data ?? []);
       setPending(false);
     } else {
-      setCurrentData([]);
-      setPending(false);
+      setRawData([]);
     }
   };
+
   useEffect(() => {
     refreshData();
   }, [selectedDevice]);
-  const [value, setValue] = useState("1hour");
-  const [currentData, setCurrentData] = useState<ChartPoint[]>([]);
+
+  const { state, isActive } = useChartPressState({ x: 0, y: { value: 0 } });
+
+  const [tooltipInfo, setTooltipInfo] = useState<{
+    value: number;
+    timestamp: number;
+  } | null>(null);
+
+  useAnimatedReaction(
+    () => ({
+      active: state.isActive.value,
+      x: state.x.value.value,
+      y: state.y.value.value.value,
+    }),
+    (current) => {
+      if (current.active) {
+        runOnJS(setTooltipInfo)({
+          value: current.y,
+          timestamp: current.x as number,
+        });
+      } else {
+        runOnJS(setTooltipInfo)(null);
+      }
+    },
+  );
+
+  const tooltipStyle = useAnimatedStyle(() => {
+    "worklet";
+    const x = Math.min(
+      Math.max(state.x.position.value - TOOLTIP_WIDTH / 2, 4),
+      SCREEN_WIDTH - TOOLTIP_WIDTH - 4,
+    );
+    return {
+      transform: [{ translateX: x }],
+      top: Math.max(state.y.value.position.value - 80, 4),
+    };
+  });
+
+  const [isFocused, setIsFocused] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsFocused(true);
+      return () => setIsFocused(false); // Tab 离开时卸载
+    }, [])
+  );
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={styles.header}>
-        <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.text }}>
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>
           {i18n.t("analysis_header_title")}
         </Text>
         <IconButton
           icon="database"
           size={24}
-          iconColor={colors.icon}
-          onPress={() => {
-            router.navigate("/dataHistory");
-          }}
+          onPress={() => router.navigate("/dataHistory")}
         />
       </View>
       <View style={styles.content}>
         <SegmentedButtons
-          // multiSelect
-          value={value}
-          onValueChange={setValue}
+          value={timeRange}
+          onValueChange={setTimeRange}
           density="regular"
           style={styles.buttonGroup}
           buttons={[
             {
               value: "1hour",
-              label: "1 hour",
-              labelStyle: { fontSize: 14, fontWeight: "bold", minWidth: 60 },
+              label: "1H",
+              labelStyle: { fontSize: 13, fontWeight: "bold" },
             },
             {
               value: "24hours",
-              label: "24 hours",
-              labelStyle: { fontSize: 14, fontWeight: "bold", minWidth: 60 },
+              label: "24H",
+              labelStyle: { fontSize: 13, fontWeight: "bold" },
             },
             {
               value: "1week",
-              label: "1 week",
-              labelStyle: { fontSize: 14, fontWeight: "bold", minWidth: 60 },
+              label: "7D",
+              labelStyle: { fontSize: 13, fontWeight: "bold" },
             },
             {
               value: "1month",
-              label: "1 month",
-              labelStyle: { fontSize: 14, fontWeight: "bold", minWidth: 60 },
+              label: "1M",
+              labelStyle: { fontSize: 13, fontWeight: "bold" },
             },
           ]}
         />
-        <View style={{ alignItems: "center", marginTop: 20, paddingRight: 50 }}>
-          <LineChart
-            data={currentData}
-            areaChart
-            curved
-            maxValue={100}
-            height={250}
-            width={SCREEN_WIDTH * 0.8}
-            noOfSections={10}
-            backgroundColor={colors.chartBackground}
-            color1={colors.chartLineColor}
-            startFillColor={colors.chartLineColor}
-            endFillColor={colors.chartLineColor}
-            startOpacity={0.22}
-            endOpacity={0.03}
-            initialSpacing={0}
-            endSpacing={5}
-            hideDataPoints
-            focusEnabled
-            showDataPointOnFocus
-            // showStripOnFocus
-            // stripColor="#93C5FD"
-            // stripOpacity={0.35}
-            hideRules
-            yAxisLabelSuffix="%"
-            pointerConfig={{
-              pointerColor: colors.chartPointerColor,
-              radius: 5,
-              pointerStripColor: colors.chartPointerStripColor,
-              pointerStripHeight: 250,
-              pointerStripWidth: 2,
-              pointerStripUptoDataPoint: false,
-              showPointerStrip: true,
-              activatePointersOnLongPress: true,
-              activatePointersDelay: 120,
-              pointerVanishDelay: 250,
-              autoAdjustPointerLabelPosition: true,
-              pointerLabelWidth: 120,
-              pointerLabelHeight: 56,
-              pointerLabelComponent: (items: ChartPoint[]) => {
-                const item = items?.[0];
-                if (!item || item.value === undefined) return null;
-                let shiftedMarginTop = -80;
-                if (item?.value) {
-                  if (item.value < 50) {
-                    shiftedMarginTop += item.value;
-                  } else {
-                    shiftedMarginTop = 110 - item.value;
-                  }
-                }
-                return (
-                  <View
+        <View style={styles.chartWrapper}>
+          {isFocused && chartData.length > 0 ? (
+            <>
+              <CartesianChart
+                data={chartData}
+                xKey="timestamp"
+                yKeys={["value"]}
+                domain={{ y: [0, 100] }}
+                domainPadding={{ left: 0, right: 10, top: 20, bottom: 10 }}
+                chartPressState={state}
+                axisOptions={{
+                  font,
+                  labelColor: colors.onSurface,
+                  lineColor: {
+                    grid: { x: colors.outline, y: "transparent" },
+                    frame: colors.outline,
+                  },
+                  formatXLabel: (v) => {
+                    const d = new Date(v as number);
+                    if (timeRange === "1hour" || timeRange === "24hours") {
+                      return d.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
+                    }
+                    return `${d.getMonth() + 1}/${d.getDate()}`;
+                  },
+                  formatYLabel: (v) => `${v}%`,
+                  tickCount: { x: 4, y: 5 },
+                }}
+              >
+                {({ points, chartBounds }) => (
+                  <>
+                    <Area
+                      points={points.value}
+                      y0={chartBounds.bottom}
+                      color={colors.primary}
+                      opacity={0.2}
+                      curveType="natural"
+                      animate={{ type: "spring" }}
+                    />
+                    <Line
+                      points={points.value}
+                      color={colors.primary}
+                      strokeWidth={2.5}
+                      curveType="natural"
+                      animate={{ type: "spring" }}
+                    />
+                    {isActive && (
+                      <Circle
+                        cx={state.x.position}
+                        cy={state.y.value.position}
+                        r={5}
+                        color={colors.primary}
+                      />
+                    )}
+                  </>
+                )}
+              </CartesianChart>
+              {isActive && tooltipInfo && (
+                <Animated.View
+                  style={[
+                    styles.tooltip,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.primaryContainer,
+                    },
+                    tooltipStyle,
+                  ]}
+                >
+                  <Text
                     style={{
-                      alignItems: "center",
-                      marginTop: shiftedMarginTop,
+                      fontSize: 11,
+                      textAlign: "center",
                     }}
                   >
-                    <Text
-                      style={{
-                        color: "black",
-                        fontSize: 14,
-                        marginBottom: 20,
-                        textAlign: "center",
-                      }}
-                    >
-                      {item.time.toLocaleDateString()}
-                    </Text>
-                    <View
-                      style={{
-                        backgroundColor: colors.chartDataPointBg,
-                        borderRadius: 10,
-                        paddingHorizontal: 10,
-                        paddingVertical: 6,
-                        marginTop: -10,
-                        borderWidth: 1,
-                        borderColor: colors.chartPointerStripColor,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: colors.chartDataPointText,
-                          fontWeight: "700",
-                          fontSize: 13,
-                        }}
-                      >
-                        {item.value}%
-                      </Text>
-                      <Text
-                        style={{
-                          color: colors.chartDataPointLabel,
-                          fontSize: 11,
-                        }}
-                      >
-                        {i18n.t("analysis_chart_battery_level")}
-                      </Text>
-                      <Text
-                        style={{
-                          color: colors.chartDataPointLabel,
-                          fontSize: 11,
-                        }}
-                      >
-                        {item.time.toLocaleTimeString()}
-                      </Text>
-                    </View>
-                  </View>
-                );
-              },
-            }}
-          />
+                    {new Date(tooltipInfo.timestamp).toLocaleDateString()}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontWeight: "700",
+                      fontSize: 15,
+                      textAlign: "center",
+                    }}
+                  >
+                    {tooltipInfo.value.toFixed(1)}%
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.onSurfaceVariant,
+                      fontSize: 11,
+                      textAlign: "center",
+                    }}
+                  >
+                    {i18n.t("analysis_chart_battery_level")}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.onSurfaceVariant,
+                      fontSize: 10,
+                      textAlign: "center",
+                    }}
+                  >
+                    {new Date(tooltipInfo.timestamp).toLocaleTimeString()}
+                  </Text>
+                </Animated.View>
+              )}
+            </>
+          ) : (
+            <Text style={{ fontSize: 18 }}>
+              {i18n.t("common_list_no_data")}
+            </Text>
+          )}
         </View>
-        {currentData.length === 0 && (
-          <Text style={{ marginTop: 12, fontSize: 20 }}>
-            {i18n.t("common_list_no_data")}
-          </Text>
-        )}
-        <Button
-          onPress={() => {
-            refreshData();
-          }}
-          mode="contained"
-          style={{ marginTop: 20, alignSelf: "center" }}
-          disabled={pending}
-        >
-          {i18n.t("analysis_button_refresh")}
-        </Button>
+        {rawData.length > 0 && (
+          <Button
+            onPress={refreshData}
+            mode="contained"
+            style={{ marginTop: 50, alignSelf: "center" }}
+            disabled={pending}
+          >
+            {i18n.t("analysis_button_refresh")}
+          </Button>)}
       </View>
     </SafeAreaView>
   );
@@ -221,7 +287,6 @@ export default function Tab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
   },
   header: {
     flexDirection: "row",
@@ -234,19 +299,28 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-  },
-  fontStyle: {
-    fontFamily: "Optima",
-    fontSize: 32,
-  },
-  activeFontStyle: {
-    color: "blue",
+    justifyContent: "flex-start",
+    paddingTop: 8,
   },
   buttonGroup: {
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 12,
     paddingHorizontal: 20,
     justifyContent: "center",
+  },
+  chartWrapper: {
+    width: SCREEN_WIDTH,
+    height: CHART_HEIGHT,
+    marginTop: 80,
+    position: "relative",
+  },
+  tooltip: {
+    position: "absolute",
+    width: TOOLTIP_WIDTH,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 0,
+    borderWidth: 1,
+    gap: 2,
   },
 });

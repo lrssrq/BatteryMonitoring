@@ -1,15 +1,15 @@
-import Colors from "@/constants/Colors";
 import { authClient } from "@/lib/auth/auth-client";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, StyleSheet, View } from "react-native";
 // import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { IconButton, MD3Colors, Text, TextInput } from "react-native-paper";
+import { IconButton, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 export default function Screen() {
   const { i18n } = useTranslation();
+  const { colors } = useTheme();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -88,12 +88,11 @@ export default function Screen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={"padding"}>
         <View style={styles.header}>
           <IconButton
             icon="close"
-            iconColor="black"
             size={30}
             onPress={() => {
               router.canGoBack() ? router.back() : router.dismissTo("/");
@@ -176,8 +175,8 @@ export default function Screen() {
           <IconButton
             icon="arrow-right"
             mode="contained"
-            iconColor={MD3Colors.primary100}
-            containerColor={MD3Colors.primary50}
+            iconColor={colors.primary}
+            containerColor={colors.primaryContainer}
             onPress={onPressRegister}
             loading={isLoading}
             style={styles.registerButton}
@@ -191,7 +190,7 @@ export default function Screen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    
   },
   header: {
     flexDirection: "row",
@@ -209,7 +208,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    color: Colors.light.text,
+    
     marginBottom: 30,
   },
   input: {
@@ -220,7 +219,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingTop: 0,
     // paddingVertical: 10,
-    color: Colors.light.text,
+    
   },
   registerButton: {
     width: "80%",

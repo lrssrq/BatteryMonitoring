@@ -1,5 +1,4 @@
 // app/(drawer)/_layout.tsx
-import { useTheme } from "@/hooks/useTheme";
 import {
   DrawerContentScrollView,
   DrawerItemList,
@@ -7,7 +6,8 @@ import {
 import Constants from "expo-constants";
 import { Drawer } from "expo-router/drawer";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 
 function CustomDrawerContent(props: any) {
   const { i18n } = useTranslation();
@@ -43,15 +43,15 @@ function CustomDrawerContent(props: any) {
         style={{
           padding: 20,
           borderTopWidth: 1,
-          borderTopColor: colors.borderColor,
+          borderTopColor: colors.outline,
         }}
       >
-        <Text style={{ color: colors.text }}>
+        <Text>
           {i18n.t("common_info_version", {
             appVersion: Constants.expoConfig?.version,
           })}
         </Text>
-        <Text style={{ fontSize: 10, color: colors.textSecondary }}>
+        <Text style={{ fontSize: 10, color: colors.onSurfaceVariant }}>
           {i18n.t("common_info_copyrght", {
             author: Constants.expoConfig?.owner,
           })}
@@ -63,7 +63,7 @@ function CustomDrawerContent(props: any) {
 
 export default function DrawerLayout() {
   const { i18n } = useTranslation();
-  const { colors, theme } = useTheme();
+  const { colors } = useTheme();
   return (
     <Drawer
       drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -83,10 +83,10 @@ export default function DrawerLayout() {
         drawerItemStyle: {
           marginVertical: 4,
         },
-        drawerInactiveTintColor: colors.tabIconDefault,
-        drawerActiveBackgroundColor: colors.drawerActiveBackground,
-        drawerInactiveBackgroundColor: colors.drawerInactiveBackground,
-        drawerActiveTintColor: colors.tint,
+        drawerInactiveTintColor: colors.onSurfaceVariant,
+        drawerActiveBackgroundColor: colors.secondaryContainer,
+        drawerInactiveBackgroundColor: "transparent",
+        drawerActiveTintColor: colors.primary,
       }}
     >
       <Drawer.Screen

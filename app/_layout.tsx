@@ -12,7 +12,7 @@ import { MqttProvider } from "@/contexts/MqttContext";
 import { SessionProvider } from "@/contexts/SessionContext";
 import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
 import { setStatusBarStyle } from "expo-status-bar";
-import { PaperProvider } from "react-native-paper";
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -36,7 +36,7 @@ export default function RootLayout() {
               <MqttProvider>
                 <BatteryDataPipelineProvider>
                   <AlertProvider>
-                    <PaperProvider>
+                    <ThemedPaperProvider>
                       {/* <KeyboardProvider> */}
                       {/* <ThemeProvider
                         value={
@@ -48,7 +48,7 @@ export default function RootLayout() {
                       </GestureHandlerRootView>
                       {/* </ThemeProvider> */}
                       {/* </KeyboardProvider> */}
-                    </PaperProvider>
+                    </ThemedPaperProvider>
                   </AlertProvider>
                 </BatteryDataPipelineProvider>
               </MqttProvider>
@@ -58,6 +58,15 @@ export default function RootLayout() {
       </SettingsProvider>
       <Toast config={toastConfig} />
     </SafeAreaProvider>
+  );
+}
+
+function ThemedPaperProvider({ children }: { children: React.ReactNode }) {
+  const { darkModeEnabled } = useSettings();
+  return (
+    <PaperProvider theme={darkModeEnabled ? MD3DarkTheme : MD3LightTheme}>
+      {children}
+    </PaperProvider>
   );
 }
 

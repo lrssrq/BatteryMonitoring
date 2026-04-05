@@ -1,6 +1,4 @@
 import PaperDialog, { PaperDialogRef } from "@/components/PaperDialog";
-import Colors from "@/constants/Colors";
-import { useTheme } from "@/hooks/useTheme";
 import BottomSheet, {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -20,7 +18,7 @@ import {
   IconButton,
   Menu,
   Text,
-  TextInput,
+  TextInput, useTheme
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -104,7 +102,6 @@ export default function DeviceManagement() {
       <View style={styles.header}>
         <IconButton
           icon="close"
-          iconColor={colors.icon}
           size={30}
           onPress={() => {
             router.canGoBack() ? router.back() : router.dismissTo("/");
@@ -117,13 +114,12 @@ export default function DeviceManagement() {
           anchor={
             <IconButton
               icon="plus"
-              iconColor={colors.icon}
               size={34}
               onPress={openMenu}
             />
           }
           anchorPosition="bottom"
-          style={{ maxWidth: 150 }}
+          style={{ maxWidth: 220 }}
           contentStyle={{
             minHeight: 100,
             paddingVertical: 0,
@@ -141,7 +137,7 @@ export default function DeviceManagement() {
             }}
             title={i18n.t("device_button_scan")}
             style={{ minHeight: 50 }}
-            titleStyle={{ fontSize: 18 }}
+            titleStyle={{ fontSize: 14 }}
             // background={{ borderless: false, foreground: true }}
           />
 
@@ -155,7 +151,7 @@ export default function DeviceManagement() {
             }}
             title={i18n.t("device_button_manual")}
             style={{ minHeight: 50 }}
-            titleStyle={{ fontSize: 18 }}
+            titleStyle={{ fontSize: 14 }}
           />
         </Menu>
       </View>
@@ -194,7 +190,6 @@ export default function DeviceManagement() {
                   setModalVisible(true);
                 }}
                 i18n={i18n}
-                colors={colors}
               />
             )}
           />
@@ -212,12 +207,11 @@ export default function DeviceManagement() {
         }}
       >
         <View style={styles.centeredView}>
-          <View style={styles.modalView}>
+          <View style={[styles.modalView, { backgroundColor: colors.background }]}>
             <IconButton
               icon="close"
               mode="outlined"
               size={20}
-              iconColor={colors.icon}
               onPress={() => {
                 setDeviceNameEditable(false);
                 setEditedDeviceName("");
@@ -241,7 +235,6 @@ export default function DeviceManagement() {
                   <IconButton
                     icon="circle-edit-outline"
                     size={20}
-                    iconColor={colors.icon}
                     style={{ right: 0 }}
                     onPress={() => {
                       setEditedDeviceName(devicePresentedOnModal.deviceName);
@@ -345,15 +338,16 @@ export default function DeviceManagement() {
           onChange={handleSheetChanges}
           detached={true}
           bottomInset={50}
-          // backgroundStyle={{ backgroundColor: MD3Colors.primary70 }}
+          backgroundStyle={{ backgroundColor: colors.primaryContainer }}
           style={{ marginHorizontal: "10%" }}
         >
           <BottomSheetView style={styles.bottomSheetView}>
             <View style={styles.bottomSheetViewView}>
               <BottomSheetTextInput
                 placeholder={i18n.t("device_input_id")}
+                placeholderTextColor={colors.onSurface}
                 maxLength={50}
-                style={styles.textInput}
+                style={[styles.textInput, { backgroundColor: colors.secondaryContainer  }]}
                 // contentStyle={styles.inputContent}
                 value={deviceSN}
                 onChangeText={setDeviceSN}
@@ -422,7 +416,6 @@ export default function DeviceManagement() {
                   setIsLoading(false);
                   setDeviceSN("");
                 }}
-                style={{}}
               >
                 {i18n.t("common_button_confirm")}
               </Button>
@@ -455,7 +448,7 @@ export default function DeviceManagement() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    
   },
   header: {
     flexDirection: "row",
@@ -495,7 +488,6 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: Colors.light.background,
     borderRadius: 20,
     padding: 35,
     alignItems: "flex-start",
@@ -508,11 +500,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
   },
   modalText: {
     alignSelf: "flex-start",
@@ -543,7 +530,7 @@ const styles = StyleSheet.create({
     borderColor: "lightgray",
     borderRadius: 8,
     paddingHorizontal: 12,
-    // backgroundColor: Colors.light.background,
+    // 
   },
   bottomSheetViewView: {
     flex: 1,
@@ -558,15 +545,13 @@ const DeviceRow = ({
   onActiveStateChange,
   onPress = () => {},
   onLongPress = () => {},
-  i18n,
-  colors,
+  i18n
 }: {
   item: Device;
   onActiveStateChange?: (active: boolean) => void;
   onPress?: () => void;
   onLongPress?: () => void;
   i18n: any;
-  colors: ReturnType<typeof useTheme>["colors"];
 }) => {
   return (
     <RectButton
@@ -575,14 +560,14 @@ const DeviceRow = ({
       style={styles.rectButton}
     >
       <Text
-        style={{ flex: 1, fontSize: 14, paddingTop: 10, color: colors.text }}
+        style={{ fontSize: 14, paddingTop: 10 }}
       >
         {item.deviceName || "Unnamed Device"}
       </Text>
-      <Text style={{ fontSize: 12, color: colors.text, paddingBottom: 10 }}>
-        {i18n.t("device_info_sn")} {item.deviceSN}
+      <Text style={{ fontSize: 12, marginTop: 5 }} numberOfLines={1}>
+        {"SN:"}{" "}{item.deviceSN}
       </Text>
-      <Text style={{ fontSize: 12, color: colors.text }}>
+      <Text style={{ fontSize: 12 }}>
         {i18n.t("device_info_bound_at")}{" "}
         {new Date(item.boundAt).toLocaleString()}
       </Text>

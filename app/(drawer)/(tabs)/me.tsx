@@ -1,7 +1,6 @@
 import PaperDialog, { PaperDialogRef } from "@/components/PaperDialog";
 import { SESSION_CACHE_KEY } from "@/constants/AsyncStorageKeys";
 import { useSession } from "@/contexts/SessionContext";
-import { useTheme } from "@/hooks/useTheme";
 import { authClient } from "@/lib/auth/auth-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
@@ -14,7 +13,7 @@ import {
   Button,
   Card,
   IconButton,
-  Text,
+  Text, useTheme
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -87,7 +86,6 @@ export default function Tab() {
       <View style={styles.header}>
         <IconButton
           icon="link"
-          iconColor={colors.icon}
           size={28}
           onPress={() => {
             if (session) router.navigate("/deviceManagement");
@@ -101,11 +99,11 @@ export default function Tab() {
             <Avatar.Icon
               size={100}
               icon="account-circle"
-              style={[styles.avatar, { backgroundColor: colors.icon }]}
+              style={[styles.avatar, { backgroundColor: colors.primary }]}
             />
             <Text
               variant="headlineSmall"
-              style={[styles.welcomeText, { color: colors.text }]}
+              style={[styles.welcomeText, {}]}
             >
               {i18n.t("me_header_welcome")}
             </Text>
@@ -128,33 +126,33 @@ export default function Tab() {
             <Avatar.Icon
               size={100}
               icon="account"
-              style={[styles.avatar, { backgroundColor: colors.icon }]}
+              style={[styles.avatar, { backgroundColor: colors.primary }]}
             />
             <Text
               variant="headlineSmall"
-              style={[styles.welcomeText, { color: colors.text }]}
+              style={[styles.welcomeText, {}]}
             >
               {i18n.t("me_header_welcome_back")}
             </Text>
             <Card
               style={[
                 styles.userCard,
-                { backgroundColor: colors.whiteBackground },
+                { backgroundColor: colors.elevation.level1 },
               ]}
             >
               <Card.Content>
-                <Text variant="titleMedium" style={{ color: colors.text }}>
+                <Text variant="titleMedium">
                   {i18n.t("me_info_username")} {displayUser.name}
                 </Text>
                 <Text
                   variant="bodyMedium"
-                  style={[styles.emailText, { color: colors.textSecondary }]}
+                  style={[styles.emailText]}
                 >
                   {i18n.t("me_info_email")} {displayUser.email}
                 </Text>
                 <Text
                   variant="bodyMedium"
-                  style={[styles.emailText, { color: colors.textSecondary }]}
+                  style={[styles.emailText]}
                 >
                   {i18n.t("me_info_created_at")}{" "}
                   {`${new Date(displayUser.createdAt).toLocaleDateString()} ${new Date(displayUser.createdAt).toLocaleTimeString()}`}

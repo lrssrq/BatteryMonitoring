@@ -1,14 +1,12 @@
 import PercentageCircle from "@/components/PercentageCircle";
-import Colors from "@/constants/Colors";
 import { useBatteryDataPipeline } from "@/contexts/BatteryDataPipelineContext";
 import { useDevice } from "@/contexts/DeviceContext";
-import { useTheme } from "@/hooks/useTheme";
 import { DrawerActions } from "@react-navigation/native";
 import { router, useNavigation } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, StyleSheet, View } from "react-native";
-import { Button, Card, Chip, IconButton, Text } from "react-native-paper";
+import { Button, Card, Chip, IconButton, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -28,18 +26,16 @@ export default function Index() {
         <IconButton
           icon="menu"
           size={24}
-          iconColor={colors.icon}
           animated={true}
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
-        <Text style={[styles.serverText, { color: colors.text }]}>
+        <Text style={[styles.serverText, {}]}>
           {i18n.t("home_info_mqtt_server")}{" "}
           {translateMqttStatus(i18n, mqttStatus)}
         </Text>
         <IconButton
           icon="bell"
           size={24}
-          iconColor={colors.icon}
           onPress={() => {
             router.navigate("/alert");
           }}
@@ -47,11 +43,11 @@ export default function Index() {
       </View>
       <View style={styles.content}>
         <Card
-          style={[styles.card, { backgroundColor: colors.whiteBackground }]}
+          style={[styles.card, { backgroundColor: colors.elevation.level1 }]}
         >
           <Card.Content style={styles.cardContent}>
             <Text
-              style={{ fontSize: 16, marginBottom: 10, color: colors.text }}
+              style={{ fontSize: 16, marginBottom: 10 }}
             >
               {i18n.t("home_info_last_synced")}
               {lastSyncTime ? lastSyncTime : i18n.t("home_info_unavailable")}
@@ -61,8 +57,7 @@ export default function Index() {
                 fontSize: 20,
                 fontWeight: "bold",
                 marginBottom: 10,
-                color: colors.text,
-              }}
+                }}
             >
               {i18n.t("home_info_battery_remaining")}
             </Text>
@@ -71,12 +66,12 @@ export default function Index() {
               borderWidth={5}
               percent={remainingPower || 0}
             />
-            <Text style={{ fontSize: 12, marginTop: 10, color: colors.text }}>
+            <Text style={{ fontSize: 12, marginTop: 10 }}>
               {i18n.t("home_info_current_device_name")}{" "}
               {selectedDevice?.deviceName ||
                 i18n.t("home_info_no_device_selected")}
             </Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+            <Text style={{ fontSize: 12}}>
               {i18n.t("home_info_current_device_sn")}{" "}
               {selectedDevice?.deviceSN ||
                 i18n.t("home_info_no_device_selected")}
@@ -103,25 +98,25 @@ export default function Index() {
         <View
           style={[
             styles.centeredView,
-            { backgroundColor: colors.overlayBackground },
+            { backgroundColor: colors.backdrop },
           ]}
         >
           <View
             style={[
               styles.modalView,
-              { backgroundColor: colors.whiteBackground },
+              { backgroundColor: colors.elevation.level1 },
             ]}
           >
             <IconButton
               icon="close"
               mode="outlined"
               size={20}
-              iconColor={colors.icon}
+              iconColor={colors.primary}
               onPress={() => setIsDeviceDialogVisible(false)}
               style={styles.modalCloseButton}
             />
             {devices.length === 0 ? (
-              <Text style={{ color: colors.text }}>
+              <Text>
                 {i18n.t("common_list_no_devices")}
               </Text>
             ) : (
@@ -161,7 +156,6 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
   },
   header: {
     flexDirection: "row",

@@ -1,12 +1,10 @@
 import { AlertMethod, AlertMethods } from "@/constants/AlertMethods";
-import Colors from "@/constants/Colors";
 import {
   getLanguageName,
   LanguageCode,
   LANGUAGES,
 } from "@/constants/Languages";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useTheme } from "@/hooks/useTheme";
 import Slider from "@react-native-community/slider";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -20,7 +18,7 @@ import {
   IconButton,
   RadioButton,
   Switch,
-  Text,
+  Text, useTheme
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 export default function SettingsScreen() {
@@ -70,14 +68,13 @@ export default function SettingsScreen() {
         <IconButton
           icon="arrow-left"
           size={24}
-          iconColor={colors.icon}
           animated={true}
           onPress={() => {
             router.canGoBack() ? router.back() : router.dismissTo("/");
             setSliderVisible(false);
           }}
         />
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
+        <Text style={[styles.headerTitle, {}]}>
           {i18n.t("settings_header_title")}
         </Text>
         <View style={{ width: 48 }} />
@@ -86,27 +83,21 @@ export default function SettingsScreen() {
         <View style={styles.content}>
           <View style={styles.settingItem}>
             <View style={styles.settingInfo}>
-              <Text style={[styles.settingLabel, { color: colors.text }]}>
+              <Text style={[styles.settingLabel]}>
                 {i18n.t("settings_toggle_auto_sync")}
               </Text>
-              <Text
-                style={[
-                  styles.settingDescription,
-                  { color: colors.textSecondary },
-                ]}
-              >
+              <Text style={[styles.settingDescription]}>
                 {i18n.t("settings_desc_auto_sync")}
               </Text>
             </View>
             <Switch
               value={autoSyncEnabled}
               onValueChange={setAutoSync}
-              color={colors.icon}
             />
           </View>
           <View style={styles.sectionHeader}>
-            <Icon source="bell" size={24} color={colors.icon} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            <Icon source="bell" size={24} />
+            <Text style={[styles.sectionTitle]}>
               {i18n.t("settings_header_notifications")}
             </Text>
           </View>
@@ -114,36 +105,25 @@ export default function SettingsScreen() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingInfo}>
-              <Text style={[styles.settingLabel, { color: colors.text }]}>
+              <Text style={[styles.settingLabel]}>
                 {i18n.t("settings_toggle_notifications")}
               </Text>
-              <Text
-                style={[
-                  styles.settingDescription,
-                  { color: colors.textSecondary },
-                ]}
-              >
+              <Text style={[styles.settingDescription]}>
                 {i18n.t("settings_desc_notifications")}
               </Text>
             </View>
             <Switch
               value={notificationEnabled}
               onValueChange={setNotification}
-              color={colors.icon}
             />
           </View>
 
           <View style={styles.settingItem}>
             <View style={styles.settingInfo}>
-              <Text style={[styles.settingLabel, { color: colors.text }]}>
+              <Text style={[styles.settingLabel]}>
                 {i18n.t("settings_toggle_battery_alerts")}
               </Text>
-              <Text
-                style={[
-                  styles.settingDescription,
-                  { color: colors.textSecondary },
-                ]}
-              >
+              <Text style={[styles.settingDescription]}>
                 {i18n.t("settings_desc_battery_alerts")}
               </Text>
             </View>
@@ -151,7 +131,6 @@ export default function SettingsScreen() {
               value={inAppAlertsEnabled}
               onValueChange={setInAppAlerts}
               disabled={true}
-              color={colors.icon}
             />
           </View>
 
@@ -161,19 +140,14 @@ export default function SettingsScreen() {
               setSliderVisible(!sliderVisible);
             }}
           >
-            <Text style={[styles.settingButtonText, { color: colors.text }]}>
+            <Text style={[styles.settingButtonText]}>
               {i18n.t("settings_label_alert_threshold")}
             </Text>
             <View style={styles.settingValue}>
-              <Text
-                style={[
-                  styles.settingValueText,
-                  { color: colors.textSecondary },
-                ]}
-              >
+              <Text style={[styles.settingValueText]}>
                 {tempThreshold}%
               </Text>
-              <Icon source="chevron-down" size={24} color={colors.iconLight} />
+              <Icon source="chevron-down" size={24} />
             </View>
           </RectButton>
           <View
@@ -190,8 +164,8 @@ export default function SettingsScreen() {
               value={tempThreshold}
               onValueChange={(val) => setTempThreshold(val)}
               onSlidingComplete={(val) => setAlertThreshold(val)}
-              minimumTrackTintColor={colors.icon}
-              thumbTintColor={colors.icon}
+              minimumTrackTintColor={colors.primary}
+              thumbTintColor={colors.primary}
             />
           </View>
           <RectButton
@@ -202,25 +176,20 @@ export default function SettingsScreen() {
               setModalVisible(true);
             }}
           >
-            <Text style={[styles.settingButtonText, { color: colors.text }]}>
+            <Text style={[styles.settingButtonText, {}]}>
               {i18n.t("settings_label_alert_method")}
             </Text>
             <View style={styles.settingValue}>
-              <Text
-                style={[
-                  styles.settingValueText,
-                  { color: colors.textSecondary },
-                ]}
-              >
+              <Text style={[styles.settingValueText]}>
                 {alertMethod}
               </Text>
-              <Icon source="chevron-right" size={24} color={colors.iconLight} />
+              <Icon source="chevron-right" size={24} />
             </View>
           </RectButton>
 
           <View style={styles.sectionHeader}>
-            <Icon source="palette" size={24} color={colors.icon} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            <Icon source="palette" size={24} />
+            <Text style={[styles.sectionTitle, {}]}>
               {i18n.t("settings_header_appearance")}
             </Text>
           </View>
@@ -228,13 +197,12 @@ export default function SettingsScreen() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingInfo}>
-              <Text style={[styles.settingLabel, { color: colors.text }]}>
+              <Text style={[styles.settingLabel, {}]}>
                 {i18n.t("settings_toggle_dark_mode")}
               </Text>
               <Text
                 style={[
-                  styles.settingDescription,
-                  { color: colors.textSecondary },
+                  styles.settingDescription
                 ]}
               >
                 {i18n.t("settings_desc_dark_mode")}
@@ -243,7 +211,6 @@ export default function SettingsScreen() {
             <Switch
               value={darkModeEnabled}
               onValueChange={setDarkMode}
-              color={colors.icon}
             />
           </View>
 
@@ -255,19 +222,18 @@ export default function SettingsScreen() {
               setModalVisible(true);
             }}
           >
-            <Text style={[styles.settingButtonText, { color: colors.text }]}>
+            <Text style={[styles.settingButtonText, {}]}>
               {i18n.t("settings_label_language")}
             </Text>
             <View style={styles.settingValue}>
               <Text
                 style={[
-                  styles.settingValueText,
-                  { color: colors.textSecondary },
+                  styles.settingValueText
                 ]}
               >
                 {getLanguageName(language)}
               </Text>
-              <Icon source="chevron-right" size={24} color={colors.iconLight} />
+              <Icon source="chevron-right" size={24} />
             </View>
           </RectButton>
         </View>
@@ -294,7 +260,7 @@ export default function SettingsScreen() {
               icon="close"
               mode="outlined"
               size={20}
-              iconColor={colors.icon}
+              iconColor={colors.primary}
               onPress={() => {
                 setModalVisible(false);
                 if (contentPresentedOnModal === "language") {
@@ -323,30 +289,24 @@ export default function SettingsScreen() {
             >
               {contentPresentedOnModal === "language"
                 ? LANGUAGES.map((lang) => (
-                    <View key={lang.code} style={styles.option}>
-                      <RadioButton value={lang.code} />
-                      <Text style={{ color: colors.text }}>
-                        {i18n.t(lang.i18nkey)}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.languageNativeName,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        {" "}
-                        ({lang.nativeName})
-                      </Text>
-                    </View>
-                  ))
+                  <View key={lang.code} style={styles.option}>
+                    <RadioButton value={lang.code} />
+                    <Text>
+                      {i18n.t(lang.i18nkey)}
+                    </Text>
+                    <Text style={[styles.languageNativeName]}>
+                      ({lang.nativeName})
+                    </Text>
+                  </View>
+                ))
                 : AlertMethods.map((method) => (
-                    <View key={method} style={styles.option}>
-                      <RadioButton value={method} />
-                      <Text style={{ color: colors.text }}>
-                        {method === "local" ? "Local Alert" : "Remote Alert"}
-                      </Text>
-                    </View>
-                  ))}
+                  <View key={method} style={styles.option}>
+                    <RadioButton value={method} />
+                    <Text>
+                      {method === "local" ? "Local Alert" : "Remote Alert"}
+                    </Text>
+                  </View>
+                ))}
             </RadioButton.Group>
 
             <Button
@@ -379,7 +339,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
   },
   header: {
     flexDirection: "row",
@@ -437,7 +396,6 @@ const styles = StyleSheet.create({
   },
   settingDescription: {
     fontSize: 12,
-    color: "#666",
   },
   settingButton: {
     flexDirection: "row",
@@ -448,7 +406,6 @@ const styles = StyleSheet.create({
   settingButtonText: {
     fontSize: 16,
     flex: 1,
-    color: "#000",
   },
   settingValue: {
     flexDirection: "row",
@@ -463,7 +420,6 @@ const styles = StyleSheet.create({
   },
   settingValueText: {
     fontSize: 14,
-    color: "#666",
     marginRight: 4,
   },
   centeredView: {
@@ -473,7 +429,6 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: Colors.light.background,
     borderRadius: 20,
     padding: 20,
     alignItems: "flex-start",
@@ -494,7 +449,6 @@ const styles = StyleSheet.create({
   },
   languageNativeName: {
     fontSize: 14,
-    color: "#666",
     marginLeft: 4,
   },
   modalSaveButton: {

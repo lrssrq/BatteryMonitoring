@@ -1,6 +1,5 @@
 import PaperDialog, { PaperDialogRef } from "@/components/PaperDialog";
 import { useDevice } from "@/contexts/DeviceContext";
-import { useTheme } from "@/hooks/useTheme";
 import { loadBatteryData } from "@/lib/battery/api";
 import { FlashList } from "@shopify/flash-list";
 import { File, Paths } from "expo-file-system";
@@ -9,13 +8,14 @@ import { router } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import {
   Button,
   DataTable,
   Divider,
   IconButton,
   Menu,
+  Text, useTheme
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as XLSX from "xlsx";
@@ -260,13 +260,13 @@ export default function DataHistory() {
       <View style={styles.header}>
         <IconButton
           icon="close"
-          iconColor={colors.icon}
+          iconColor={colors.primary}
           size={30}
           onPress={() => {
             router.canGoBack() ? router.back() : router.dismissTo("/");
           }}
         />
-        <Text style={[styles.title, { color: colors.text }]}>
+        <Text style={styles.title}>
           {i18n.t("history_header_title")}
         </Text>
         <View style={{ width: 48 }} />
@@ -328,7 +328,7 @@ export default function DataHistory() {
                 }}
                 title="CSV"
                 style={{ minHeight: 40 }}
-                titleStyle={{ fontSize: 18 }}
+                titleStyle={{ fontSize: 14 }}
               />
               <Divider />
               <Menu.Item
@@ -340,7 +340,7 @@ export default function DataHistory() {
                 }}
                 title="JSON"
                 style={{ minHeight: 40 }}
-                titleStyle={{ fontSize: 18 }}
+                titleStyle={{ fontSize: 14 }}
               />
               <Divider />
               <Menu.Item
@@ -352,7 +352,7 @@ export default function DataHistory() {
                 }}
                 title="XML"
                 style={{ minHeight: 40 }}
-                titleStyle={{ fontSize: 18 }}
+                titleStyle={{ fontSize: 14 }}
               />
               <Divider />
               <Menu.Item
@@ -364,7 +364,7 @@ export default function DataHistory() {
                 }}
                 title="Excel"
                 style={{ minHeight: 40 }}
-                titleStyle={{ fontSize: 18 }}
+                titleStyle={{ fontSize: 14 }}
               />
               <Divider />
               <Menu.Item
@@ -376,7 +376,7 @@ export default function DataHistory() {
                 }}
                 title="HTML"
                 style={{ minHeight: 40 }}
-                titleStyle={{ fontSize: 18 }}
+                titleStyle={{ fontSize: 14 }}
               />
               <Divider />
               <Menu.Item
@@ -388,7 +388,7 @@ export default function DataHistory() {
                 }}
                 title="PDF"
                 style={{ minHeight: 40 }}
-                titleStyle={{ fontSize: 18 }}
+                titleStyle={{ fontSize: 14 }}
               />
             </Menu>
             <Button mode="outlined" onPress={() => dialogRef.current?.show()}>
@@ -401,7 +401,7 @@ export default function DataHistory() {
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
           <Text
-            style={{ alignSelf: "center", fontSize: 20, color: colors.text }}
+            style={{ alignSelf: "center", fontSize: 20 }}
           >
             {i18n.t("common_list_no_data")}
           </Text>

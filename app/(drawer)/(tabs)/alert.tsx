@@ -1,21 +1,16 @@
 import PaperDialog, { PaperDialogRef } from "@/components/PaperDialog";
-import Colors from "@/constants/Colors";
 import { Message, useAlert } from "@/contexts/AlertContext";
-import { useTheme } from "@/hooks/useTheme";
 import { FlashList } from "@shopify/flash-list";
-import { useCallback, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
-import { RectButton, RefreshControl } from "react-native-gesture-handler";
-import Swipeable, {
-  SwipeableMethods,
-} from "react-native-gesture-handler/ReanimatedSwipeable";
-import { Badge, Divider, Icon, IconButton } from "react-native-paper";
-import Reanimated, {
-  interpolate,
-  SharedValue,
-  useAnimatedStyle,
-} from "react-native-reanimated";
+import { Modal, StyleSheet, View } from "react-native";
+import {
+  GestureHandlerRootView,
+  Pressable,
+  RectButton,
+  RefreshControl
+} from "react-native-gesture-handler";
+import { Badge, Divider, Icon, IconButton, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 export default function Alert() {
@@ -23,7 +18,6 @@ export default function Alert() {
   const { colors } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
-  const openSwipeableRef = useRef<SwipeableMethods>(null);
   const dialogRef1 = useRef<PaperDialogRef>(null);
   const dialogRef2 = useRef<PaperDialogRef>(null);
 
@@ -36,24 +30,9 @@ export default function Alert() {
     handleClearData,
   } = useAlert();
 
-  const handleRowOpen = (ref: SwipeableMethods) => {
-    if (openSwipeableRef.current && openSwipeableRef.current !== ref) {
-      openSwipeableRef.current.close();
-    }
-    openSwipeableRef.current = ref;
-  };
-
-  const onRowDelete = (itemToDelete: Message) => {
-    openSwipeableRef.current = null;
+  const onRowDelete = useCallback((itemToDelete: Message) => {
     handleDelete(itemToDelete);
-  };
-
-  const handleScroll = () => {
-    if (openSwipeableRef.current) {
-      openSwipeableRef.current.close();
-      openSwipeableRef.current = null;
-    }
-  };
+  }, [handleDelete]);
 
   const clearData = () => {
     handleClearData();
@@ -70,6 +49,16 @@ export default function Alert() {
     setRefreshTimestamp(Date.now()); // update timestamp to trigger re-render
     setRefreshing(false);
   }, []);
+
+  const renderItem = useCallback(({ item }: { item: Message }) => (
+    <AlertRow
+      item={item}
+      onDelete={onRowDelete}
+      onMarkAsRead={handleMarkAsRead}
+      i18n={i18n}
+      colors={colors}
+    />
+  ), [onRowDelete, handleMarkAsRead, i18n, colors]);
 
   return (
     <SafeAreaView
@@ -108,7 +97,6 @@ export default function Alert() {
         <IconButton
           icon="broom"
           size={24}
-          iconColor={colors.icon}
           animated={true}
           onPress={() => {
             if (messages && messages.length > 0) dialogRef1.current?.show();
@@ -117,7 +105,6 @@ export default function Alert() {
         <IconButton
           icon="check-all"
           size={24}
-          iconColor={colors.icon}
           animated={true}
           onPress={() => {
             if (messages && messages.length > 0) dialogRef2.current?.show();
@@ -141,7 +128,7 @@ export default function Alert() {
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
           >
-            <Text style={{ color: colors.text }}>
+            <Text>
               {i18n.t("alert_list_empty")}
             </Text>
           </View>
@@ -151,8 +138,6 @@ export default function Alert() {
             extraData={refreshTimestamp}
             ItemSeparatorComponent={Divider}
             keyExtractor={(item, index) => item.message + index}
-            onScrollBeginDrag={handleScroll}
-            // style={{ flex: 1 }}
             contentContainerStyle={[
               styles.container,
               { backgroundColor: colors.background },
@@ -163,16 +148,7 @@ export default function Alert() {
             showsVerticalScrollIndicator={true}
             bounces={true}
             alwaysBounceVertical={true}
-            renderItem={({ item }) => (
-              <SwipeableRow
-                item={item}
-                onDelete={() => onRowDelete(item)}
-                onMarkAsRead={() => handleMarkAsRead(item)}
-                onWillOpen={handleRowOpen}
-                i18n={i18n}
-                colors={colors}
-              />
-            )}
+            renderItem={renderItem}
           />
         )}
       </View>
@@ -183,27 +159,14 @@ export default function Alert() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: Colors.light.background,
     padding: 5,
   },
-  rightAction: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "transparent",
-  },
-  separator: {
-    width: "100%",
-    borderTopWidth: 1,
-  },
-  swipeable: {
-    flex: 1,
-    // height: 80,
+  row: {
+    height: 80,
     paddingVertical: 10,
     paddingHorizontal: 10,
     justifyContent: "space-between",
     flexDirection: "row",
-    backgroundColor: "transparent",
   },
   messageText: {
     top: 30,
@@ -214,160 +177,144 @@ const styles = StyleSheet.create({
     top: "1%",
     right: "2%",
   },
-  // separator: {
-  //   backgroundColor: "rgb(200, 199, 204)",
-  //   height: StyleSheet.hairlineWidth,
-  // },
+  modalOverlay: {
+    flex: 1,
+  },
+  popupMenu: {
+    position: "absolute",
+    width: 160,
+    borderRadius: 8,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    paddingVertical: 4,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
 });
 
-function RightAction({
-  prog,
-  drag,
-  onDelete,
-  onMarkAsRead,
-  colors,
-}: {
-  prog: SharedValue<number>;
-  drag: SharedValue<number>;
-  onMarkAsRead: () => void;
-  onDelete: () => void;
-  colors: any;
-}) {
-  const styleAnimation = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: drag.value + 100 }],
-    };
-  });
-  const leftStyleAnimation = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: interpolate(drag.value, [0, -100], [50, 0]) }],
-    };
-  });
-  const rightStyleAnimation = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: interpolate(drag.value, [0, -100], [50, 0]) }],
-    };
-  });
-
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        width: 100,
-        backgroundColor: "transparent",
-      }}
-    >
-      <Reanimated.View style={[styleAnimation, { width: 50 }]}>
-        <RectButton
-          style={styles.rightAction}
-          onPress={() => {
-            onMarkAsRead();
-            Toast.show({
-              type: "success",
-              text1: "Message",
-              visibilityTime: 2000,
-            });
-          }}
-        >
-          <Icon source="check" color={colors.icon} size={24} />
-        </RectButton>
-      </Reanimated.View>
-      <Reanimated.View style={[styleAnimation, { width: 50 }]}>
-        <RectButton style={styles.rightAction} onPress={onDelete}>
-          <Icon source="close" color={colors.icon} size={24} />
-        </RectButton>
-      </Reanimated.View>
-    </View>
-  );
-}
-
-const SwipeableRow = ({
+const AlertRow = memo(function AlertRow({
   item,
   onDelete,
   onMarkAsRead,
-  onWillOpen,
   i18n,
   colors,
 }: {
   item: Message;
-  onDelete: () => void;
-  onMarkAsRead: () => void;
-  onWillOpen: (ref: SwipeableMethods) => void;
+  onDelete: (item: Message) => void;
+  onMarkAsRead: (item: Message) => void;
   i18n: any;
   colors: any;
-}) => {
-  const swipeableRef = useRef<SwipeableMethods>(null);
+}) {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
+  const rowRef = useRef<View>(null);
 
-  const close = () => {
-    swipeableRef.current?.reset();
-    onDelete();
-  };
+  const handleLongPress = useCallback(() => {
+    rowRef.current?.measureInWindow((x, y, width, height) => {
+      setMenuPos({ x: x + width / 2 - 80, y: y + height });
+      setMenuVisible(true);
+    });
+  }, []);
 
-  const markAsRead = () => {
-    onMarkAsRead();
-    swipeableRef.current?.reset();
-  };
-  const backgroundColorStyle = {
-    backgroundColor: item.unread ? colors.alertBackground : "transparent",
-  };
+  const handleMarkAsRead = useCallback(() => {
+    onMarkAsRead(item);
+    setMenuVisible(false);
+    Toast.show({
+      type: "success",
+      text1: "Message",
+      visibilityTime: 2000,
+    });
+  }, [onMarkAsRead, item]);
 
-  if (!item) {
-    return null;
-  }
+  const handleDelete = useCallback(() => {
+    setMenuVisible(false);
+    onDelete(item);
+  }, [onDelete, item]);
+
+  if (!item) return null;
+
   return (
-    <Swipeable
-      ref={swipeableRef}
-      containerStyle={[
-        styles.swipeable,
-        { height: 80, backgroundColor: backgroundColorStyle.backgroundColor },
-      ]}
-      childrenContainerStyle={{ flex: 1, height: 50, width: "100%" }}
-      friction={2}
-      enableTrackpadTwoFingerGesture
-      rightThreshold={40}
-      overshootRight={false}
-      dragOffsetFromLeftEdge={Number.MAX_SAFE_INTEGER}
-      dragOffsetFromRightEdge={20}
-      // activeOffsetX={[-100, 100]}
-      // shouldCancelWhenOutside={true}
-      // activateAfterLongPress={1000}
-      // failOffsetY={[-5, 5]}
-      onSwipeableWillOpen={() =>
-        swipeableRef.current && onWillOpen(swipeableRef.current)
-      }
-      renderRightActions={(prog, drag) => (
-        <RightAction
-          prog={prog}
-          drag={drag}
-          onDelete={close}
-          onMarkAsRead={markAsRead}
-          colors={colors}
-        />
-      )}
-    >
-      <Text
-        style={{
-          position: "absolute",
-          top: "1%",
-          left: -5,
-          fontWeight: "bold",
-          color: colors.text,
-        }}
+    <>
+      <RectButton
+        onLongPress={handleLongPress}
+        style={[
+          styles.row,
+          {
+            backgroundColor: item.unread
+              ? colors.tertiaryContainer
+              : "transparent",
+          },
+        ]}
       >
-        {item.device}
-      </Text>
-      <Text
-        numberOfLines={2}
-        style={[styles.messageText, { color: colors.text }]}
+        <View ref={rowRef} collapsable={false} style={StyleSheet.absoluteFill} />
+        <Text
+          style={{
+            position: "absolute",
+            top: "1%",
+            left: "2%",
+            fontWeight: "bold",
+          }}
+        >
+          {item.device}
+        </Text>
+        <Text
+          numberOfLines={2}
+          style={styles.messageText}
+        >
+          {item.message}
+        </Text>
+        <Text style={[styles.dateText]}>
+          {formatTime(i18n, item.when.toISOString())}
+        </Text>
+      </RectButton>
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
       >
-        {item.message}
-      </Text>
-      <Text style={[styles.dateText, { color: colors.textSecondary }]}>
-        {formatTime(i18n, item.when.toISOString())}
-      </Text>
-    </Swipeable>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View
+            style={[
+              styles.popupMenu,
+              {
+                top: menuPos.y,
+                left: menuPos.x,
+                backgroundColor: colors.elevation?.level1 ?? colors.background,
+              },
+            ]}
+          >
+            <RectButton style={styles.menuItem} onPress={handleMarkAsRead}>
+              <Icon source="check" size={20} />
+              <Text style={{ marginLeft: 8 }}>
+                {i18n.t("common_button_mark_read", { defaultValue: "Mark as read" })}
+              </Text>
+            </RectButton>
+            <Divider />
+            <RectButton style={styles.menuItem} onPress={handleDelete}>
+              <Icon source="close" size={20} />
+              <Text style={{ marginLeft: 8 }}>
+                {i18n.t("common_button_delete", { defaultValue: "Delete" })}
+              </Text>
+            </RectButton>
+          </View>
+        </Pressable>
+        </GestureHandlerRootView>
+      </Modal>
+    </>
   );
-};
+});
 
 const formatTime = (i18n: any, isoString: string) => {
   const date = new Date(isoString);

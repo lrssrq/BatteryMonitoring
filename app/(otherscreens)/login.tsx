@@ -1,4 +1,3 @@
-import Colors from "@/constants/Colors";
 import { authClient } from "@/lib/auth/auth-client";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -8,15 +7,16 @@ import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import {
   Button,
   IconButton,
-  MD3Colors,
   Text,
   TextInput,
+  useTheme
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function Screen() {
   const { i18n } = useTranslation();
+  const { colors } = useTheme();
   const [email, onChangeEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -74,7 +74,7 @@ export default function Screen() {
   //   return text.length === 0; // If length is 0, consider it an error
   // };
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -82,7 +82,6 @@ export default function Screen() {
         <View style={styles.header}>
           <IconButton
             icon="close"
-            iconColor="black"
             size={30}
             onPress={() => {
               router.canGoBack() ? router.back() : router.dismissTo("/");
@@ -134,8 +133,8 @@ export default function Screen() {
           <IconButton
             icon="arrow-right"
             mode="contained"
-            iconColor={MD3Colors.primary100}
-            containerColor={MD3Colors.primary50}
+            iconColor={colors.primary}
+            containerColor={colors.primaryContainer}
             onPress={onPressLogin}
             style={styles.loginButton}
             loading={isLoading}
@@ -163,7 +162,7 @@ export default function Screen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    
   },
   header: {
     flexDirection: "row",

@@ -1,12 +1,10 @@
-import Colors from "@/constants/Colors";
-import { useTheme } from "@/hooks/useTheme";
 import Constants from "expo-constants";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, StyleSheet, View } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
-import { Card, Divider, Icon, IconButton, Text } from "react-native-paper";
+import { Card, Divider, Icon, IconButton, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -25,34 +23,34 @@ export default function AboutScreen() {
         <IconButton
           icon="arrow-left"
           size={24}
-          iconColor={colors.icon}
+          iconColor={colors.primary}
           animated={true}
           onPress={() => {
             router.canGoBack() ? router.back() : router.dismissTo("/");
           }}
         />
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
+        <Text style={[styles.headerTitle]}>
           {i18n.t("about_header_title")}
         </Text>
         <View style={{ width: 48 }} />
       </View>
       <View style={styles.content}>
         <Card
-          style={[styles.card, { backgroundColor: colors.whiteBackground }]}
+          style={[styles.card, { backgroundColor: colors.elevation.level1 }]}
         >
           <Card.Content>
             <View style={styles.iconContainer}>
-              <Icon source="battery-charging" size={60} color={colors.icon} />
+              <Icon source="battery-charging" size={60} color={colors.primary} />
             </View>
-            <Text style={[styles.appName, { color: colors.text }]}>
+            <Text style={[styles.appName]}>
               {i18n.t("about_info_app_name")}
             </Text>
-            <Text style={[styles.version, { color: colors.textSecondary }]}>
+            <Text style={[styles.version]}>
               {i18n.t("common_info_version", {
                 appVersion: Constants.expoConfig?.version,
               })}
             </Text>
-            <Text style={[styles.description, { color: colors.textSecondary }]}>
+            <Text style={[styles.description]}>
               {i18n.t("about_info_desc")}
             </Text>
           </Card.Content>
@@ -75,10 +73,10 @@ export default function AboutScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: colors.text }}>
+              <Text>
                 {i18n.t("about_header_features")}
               </Text>
-              <Icon source="chevron-right" size={24} color={colors.iconLight} />
+              <Icon source="chevron-right" size={24} />
             </View>
           </RectButton>
           <Divider />
@@ -97,10 +95,10 @@ export default function AboutScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: colors.text }}>
+              <Text>
                 {i18n.t("about_button_contact")}
               </Text>
-              <Icon source="chevron-right" size={24} color={colors.iconLight} />
+              <Icon source="chevron-right" size={24} />
             </View>
           </RectButton>
           <Divider />
@@ -122,10 +120,10 @@ export default function AboutScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: colors.text }}>
+              <Text>
                 {i18n.t("about_button_update")}
               </Text>
-              <Icon source="chevron-right" size={24} color={colors.iconLight} />
+              <Icon source="chevron-right" size={24} />
             </View>
           </RectButton>
           <Divider />
@@ -141,12 +139,12 @@ export default function AboutScreen() {
         }}
       >
         <Divider style={styles.divider} />
-        <Text style={[styles.legalText, { color: colors.textSecondary }]}>
+        <Text style={[styles.legalText]}>
           {i18n.t("common_info_copyrght", {
             author: Constants.expoConfig?.owner,
           })}
         </Text>
-        <Text style={[styles.legalText, { color: colors.textSecondary }]}>
+        <Text style={[styles.legalText]}>
           {i18n.t("about_info_privacy")}
         </Text>
       </View>
@@ -167,7 +165,7 @@ export default function AboutScreen() {
               icon="close"
               mode="outlined"
               size={20}
-              iconColor={colors.icon}
+              iconColor={colors.primary}
               onPress={() => {
                 setModalVisible(false);
               }}
@@ -184,7 +182,7 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    
   },
   header: {
     flexDirection: "row",
@@ -224,13 +222,11 @@ const styles = StyleSheet.create({
   },
   version: {
     fontSize: 16,
-    color: "#666",
     textAlign: "center",
     marginBottom: 12,
   },
   description: {
     fontSize: 14,
-    color: "#444",
     textAlign: "center",
     lineHeight: 20,
     paddingHorizontal: 8,
@@ -264,12 +260,10 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 14,
-    color: "#444",
     flex: 1,
   },
   legalText: {
     fontSize: 12,
-    color: "#666",
     marginBottom: 6,
     lineHeight: 18,
   },
@@ -281,7 +275,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: Colors.light.background,
+    
     borderRadius: 20,
     padding: 20,
     alignItems: "flex-start",
@@ -299,31 +293,31 @@ const styles = StyleSheet.create({
 
 const keyFeatures = (i18n: any, colors: any) => (
   <>
-    <Text style={[styles.sectionTitle, { color: colors.text }]}>
+    <Text style={[styles.sectionTitle, {}]}>
       {i18n.t("about_header_features")}
     </Text>
     <Divider style={styles.divider} />
     <View style={styles.featureItem}>
-      <IconButton icon="chart-line" size={24} iconColor={colors.icon} />
-      <Text style={[styles.featureText, { color: colors.text }]}>
+      <IconButton icon="chart-line" size={24} iconColor={colors.primary} />
+      <Text style={[styles.featureText, {}]}>
         {i18n.t("about_feature_realtime")}
       </Text>
     </View>
     <View style={styles.featureItem}>
-      <IconButton icon="bell-alert" size={24} iconColor={colors.icon} />
-      <Text style={[styles.featureText, { color: colors.text }]}>
+      <IconButton icon="bell-alert" size={24} iconColor={colors.primary} />
+      <Text style={[styles.featureText, {}]}>
         {i18n.t("about_feature_alerts")}
       </Text>
     </View>
     <View style={styles.featureItem}>
-      <IconButton icon="history" size={24} iconColor={colors.icon} />
-      <Text style={[styles.featureText, { color: colors.text }]}>
+      <IconButton icon="history" size={24} iconColor={colors.primary} />
+      <Text style={[styles.featureText, {}]}>
         {i18n.t("about_feature_history")}
       </Text>
     </View>
     <View style={styles.featureItem}>
-      <IconButton icon="devices" size={24} iconColor={colors.icon} />
-      <Text style={[styles.featureText, { color: colors.text }]}>
+      <IconButton icon="devices" size={24} iconColor={colors.primary} />
+      <Text style={[styles.featureText, {}]}>
         {i18n.t("about_feature_multidevice")}
       </Text>
     </View>
@@ -332,25 +326,25 @@ const keyFeatures = (i18n: any, colors: any) => (
 
 const developerInfo = (i18n: any, colors: any) => (
   <>
-    <Text style={[styles.sectionTitle, { color: colors.text }]}>
+    <Text style={[styles.sectionTitle, {}]}>
       {i18n.t("about_header_contact")}
     </Text>
     <Divider style={styles.divider} />
     <View style={styles.infoRow}>
-      <Text style={[styles.infoLabel, { color: colors.text }]}>
+      <Text style={[styles.infoLabel, {}]}>
         {i18n.t("about_info_developer")}
       </Text>
-      <Text style={[styles.infoValue, { color: colors.text }]}>
+      <Text style={[styles.infoValue, {}]}>
         {Constants.expoConfig?.owner}
       </Text>
     </View>
     <View style={styles.infoRow}>
-      <Text style={[styles.infoLabel, { color: colors.text }]}>
+      <Text style={[styles.infoLabel, {}]}>
         {i18n.t("about_info_bug_report")}
       </Text>
       <Link
         href={`mailto:${Constants.expoConfig?.extra?.mailAddress}`}
-        style={[styles.linkText, { color: colors.icon }]}
+        style={[styles.linkText, { color: colors.primary }]}
       >
         {Constants.expoConfig?.extra?.mailAddress}
       </Link>

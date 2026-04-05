@@ -1,27 +1,18 @@
-import { useTheme } from "@/hooks/useTheme";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+import { useTheme } from "react-native-paper";
 
 export default function TabLayout() {
-  const { theme, colors } = useTheme();
+  const { colors } = useTheme();
   const { i18n } = useTranslation();
   return (
     <Tabs
       screenOptions={{
         tabBarActiveBackgroundColor: colors.background,
         tabBarInactiveBackgroundColor: colors.background,
-        tabBarActiveTintColor: colors.tint,
+        tabBarActiveTintColor: colors.primary,
         tabBarStyle: {
           backgroundColor: colors.background,
         },

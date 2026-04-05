@@ -19,7 +19,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { Icon, IconButton, MD3Colors } from "react-native-paper";
+import { Icon, IconButton, MD3Colors, useTheme } from "react-native-paper";
 import Toast from "react-native-toast-message";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("screen");
 
@@ -85,10 +85,11 @@ async function openImagePickerAsync() {
 
 export default function Screen() {
   const { i18n } = useTranslation();
+  const { dark: darkEnabled } = useTheme();
   useFocusEffect(
     useCallback(() => {
       setStatusBarStyle("light");
-      return () => setStatusBarStyle("dark");
+      return () => darkEnabled? setStatusBarStyle("light") : setStatusBarStyle("dark");
     }, []),
   );
 

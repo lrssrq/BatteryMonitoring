@@ -1,33 +1,41 @@
-import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useExecutorchModule } from "react-native-executorch";
 
 const ModelContext = createContext<any>(null);
 
 export const ModelProvider = ({ children }: { children: ReactNode }) => {
-  const moduleRef = useRef<any>(null);
-  const timeRef = useRef(0);
+  let module: any = null;
 
   try {
-    moduleRef.current = useExecutorchModule({
+    module = useExecutorchModule({
       modelSource: require("@/assets/models/model.pte"),
     });
   } catch (error) {
     console.error("Failed to init Executorch:", error);
-    moduleRef.current = null;
+    module = null;
   }
 
-  useEffect(() => {
-    if (!moduleRef.current) return;
-    if (moduleRef.current.isGenerating) {
-      timeRef.current = performance.now();
-    } else if (timeRef.current > 0) {
-      const elapsed = performance.now() - timeRef.current;
-      console.log("Model inference time:", elapsed, "ms");
+  const modelApi = useMemo(() => {
+    if (!module) {
+      return null;
     }
-  }, [moduleRef.current?.isGenerating]);
+
+    return {
+      ...module,
+      forward: async (...args: any[]) => {
+        const start = performance.now();
+        try {
+          return await module.forward(...args);
+        } finally {
+          const elapsed = performance.now() - start;
+          console.log("Model inference time:", elapsed, "ms");
+        }
+      },
+    };
+  }, [module]);
 
   return (
-    <ModelContext.Provider value={moduleRef.current}>
+    <ModelContext.Provider value={modelApi}>
       {children}
     </ModelContext.Provider>
   );
