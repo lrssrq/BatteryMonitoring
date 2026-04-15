@@ -47,8 +47,7 @@ const config: ExpoConfig = {
         //   "image": "./assets/images/splash-icon-dark.png",
         //   "backgroundColor": "#000000"
         // },
-        imageWidth: 300,
-        mode: "cover",
+        imageWidth: 200,
       },
     ],
     "expo-router",
@@ -74,9 +73,10 @@ const config: ExpoConfig = {
           enableShrinkResourcesInReleaseBuilds: isProductionBuild,
           enableMinifyInReleaseBuilds: isProductionBuild,
           extraProguardRules: `
--keep class org.pytorch.executorch.** { *; }
--keep class com.swmansion.rnexecutorch.** { *; }
+            -keep class org.pytorch.executorch.** { *; }
+            -keep class com.swmansion.rnexecutorch.** { *; }
           `,
+          buildArchs: ["arm64-v8a"],
         },
       },
     ],

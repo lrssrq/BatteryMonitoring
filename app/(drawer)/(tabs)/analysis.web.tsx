@@ -40,12 +40,12 @@ function clampPercent(value: number) {
   return Math.max(0, Math.min(100, value));
 }
 
-function formatAxisTime(timestamp: number, range: RangeKey): string {
+function formatAxisTime(timestamp: number, range: RangeKey, i18n: any): string {
   const d = new Date(timestamp);
   if (range === "1hour" || range === "24hours") {
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" });
   }
-  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+  return d.toLocaleDateString(i18n.language, { month: "short", day: "numeric" });
 }
 
 export default function AnalysisWeb() {
@@ -211,7 +211,7 @@ export default function AnalysisWeb() {
                     dataKey="timestamp"
                     type="number"
                     domain={["dataMin", "dataMax"]}
-                    tickFormatter={(ts) => formatAxisTime(ts, value)}
+                    tickFormatter={(ts) => formatAxisTime(ts, value, i18n)}
                     tick={{ fill: "var(--gray-9)", fontSize: 11 }}
                     stroke="var(--gray-7)"
                     tickLine={false}

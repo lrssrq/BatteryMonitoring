@@ -81,7 +81,7 @@ function useMqttConnection(doMqttConnection: boolean): UseMqttConnectionResult {
           setMqttError: (error: MqttError | null) => {
             if (isComponentMounted) setMqttError(error);
           },
-          uniqueId,
+          uniqueId:uniqueId,
           onMessage: (topic: string, message: Buffer<ArrayBufferLike>) => {
             if (isComponentMounted) {
               setMqttData({ message, topic });
